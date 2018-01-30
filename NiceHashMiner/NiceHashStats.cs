@@ -51,7 +51,7 @@ namespace NiceHashMiner
             public NiceHashSMA[] simplemultialgo;
         }
 
-        public class nicehash_json_2
+        public class AlgorithmRatesInfo
         {
             public nicehash_result_2 result;
             public string method;
@@ -91,10 +91,10 @@ namespace NiceHashMiner
             string r1 = GetNiceHashAPIData(Links.NHM_API_info, worker);
             if (r1 == null) return null;
 
-            nicehash_json_2 nhjson_current;
+            AlgorithmRatesInfo nhjson_current;
             try
             {
-                nhjson_current = JsonConvert.DeserializeObject<nicehash_json_2>(r1, Globals.JsonSettings);
+                nhjson_current = JsonConvert.DeserializeObject<AlgorithmRatesInfo>(r1, Globals.JsonSettings);
                 Dictionary<AlgorithmType, NiceHashSMA> ret = new Dictionary<AlgorithmType, NiceHashSMA>();
                 NiceHashSMA[] temp = nhjson_current.result.simplemultialgo;
                 if (temp != null) {

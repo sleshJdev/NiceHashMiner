@@ -93,7 +93,7 @@ namespace NiceHashMiner.Miners
             string url = Globals.GetLocationURL(algorithm.NiceHashID, Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation], this.ConectionType);
 
             // demo for benchmark
-            string username = Globals.DemoUser;
+            string username = ConfigManager.GeneralConfig.BitcoinAddress;
 
             if (ConfigManager.GeneralConfig.WorkerName.Length > 0)
                 username += "." + ConfigManager.GeneralConfig.WorkerName.Trim();

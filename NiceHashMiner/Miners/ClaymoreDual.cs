@@ -104,7 +104,7 @@ namespace NiceHashMiner.Miners {
             // network stub
             string url = Globals.GetLocationURL(algorithm.NiceHashID, Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation], this.ConectionType);
             // demo for benchmark
-            string ret = GetStartCommand(url, Globals.DemoUser, ConfigManager.GeneralConfig.WorkerName.Trim());
+            string ret = GetStartCommand(url, ConfigManager.GeneralConfig.BitcoinAddress, ConfigManager.GeneralConfig.WorkerName.Trim());
             // local benhcmark
             if (!IsDual()) {
                 benchmarkTimeWait = time;

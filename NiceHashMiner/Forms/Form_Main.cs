@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Globalization;
@@ -16,23 +13,17 @@ using NiceHashMiner.Miners;
 using NiceHashMiner.Interfaces;
 using NiceHashMiner.Forms.Components;
 using NiceHashMiner.Utils;
-using NiceHashMiner.PInvoke;
 
 using SystemTimer = System.Timers.Timer;
 using Timer = System.Windows.Forms.Timer;
-using System.Timers;
 
 namespace NiceHashMiner
 {
-    using NiceHashMiner.Miners.Grouping;
-    using NiceHashMiner.Net20_backport;
-    using NiceHashMiner.Miners.Parsing;
-    public partial class Form_Main : Form, Form_Loading.IAfterInitializationCaller, IMainFormRatesComunication
+    public partial class Form_Main : Form, Form_Loading.IAfterInitializationCaller
     {
         private static string VisitURL = Links.VisitURL;
 
         private Timer MinerStatsCheck;
-        private Timer UpdateCheck;
         private SystemTimer SMACheck;
         private Timer BalanceCheck;
         private Timer SMAMinerCheck;
@@ -41,9 +32,8 @@ namespace NiceHashMiner
         private Timer IdleCheck;
 
         private bool ShowWarningNiceHashData;
-        private bool DemoMode;
 
-        private Random R;
+        private Random R = new Random((int)DateTime.Now.Ticks);
 
         private Form_Loading LoadingScreen;
         private Form_Benchmark BenchmarkForm;
@@ -75,45 +65,20 @@ namespace NiceHashMiner
             {
                 long TotalRam = long.Parse(mo["TotalVisibleMemorySize"].ToString()) / 1024;
                 long PageFileSize = (long.Parse(mo["TotalVirtualMemorySize"].ToString()) / 1024) - TotalRam;
-                Helpers.ConsolePrint("NICEHASH", "Total RAM: "      + TotalRam     + "MB");
+                Helpers.ConsolePrint("NICEHASH", "Total RAM: " + TotalRam + "MB");
                 Helpers.ConsolePrint("NICEHASH", "Page File Size: " + PageFileSize + "MB");
             }
 
-            R = new Random((int)DateTime.Now.Ticks);
-
-            Text += " v" + Application.ProductVersion + _betaAlphaPostfixString;
-
-            label_NotProfitable.Visible = false;
-
             InitMainConfigGUIData();
-
-            // for resizing
-            InitFlowPanelStart();
-
-            if (groupBox1.Size.Height > 0 && this.Size.Height > 0) {
-                EmtpyGroupPanelHeight = groupBox1.Size.Height;
-                MainFormHeight = this.Size.Height - EmtpyGroupPanelHeight;
-            } else {
-                EmtpyGroupPanelHeight = 59;
-                MainFormHeight = 330 - EmtpyGroupPanelHeight;
-            }
-            ClearRatesALL();
         }
 
-        private void InitLocalization() {
+        private void InitLocalization()
+        {
             MessageBoxManager.Unregister();
             MessageBoxManager.Yes = International.GetText("Global_Yes");
             MessageBoxManager.No = International.GetText("Global_No");
             MessageBoxManager.OK = International.GetText("Global_OK");
             MessageBoxManager.Register();
-
-            labelServiceLocation.Text = International.GetText("Service_Location") + ":";
-            labelBitcoinAddress.Text = International.GetText("BitcoinAddress") + ":";
-            labelWorkerName.Text = International.GetText("WorkerName") + ":";
-
-            linkLabelVisitUs.Text = International.GetText("Form_Main_visit_us");
-            linkLabelCheckStats.Text = International.GetText("Form_Main_check_stats");
-            linkLabelChooseBTCWallet.Text = International.GetText("Form_Main_choose_bitcoin_wallet");
 
             toolStripStatusLabelGlobalRateText.Text = International.GetText("Form_Main_global_rate") + ":";
             toolStripStatusLabelBTCDayText.Text = "BTC/" + International.GetText("Day");
@@ -125,21 +90,36 @@ namespace NiceHashMiner
             buttonSettings.Text = International.GetText("Form_Main_settings");
             buttonStartMining.Text = International.GetText("Form_Main_start");
             buttonStopMining.Text = International.GetText("Form_Main_stop");
-
-            label_NotProfitable.Text = International.GetText("Form_Main_MINING_NOT_PROFITABLE");
-            groupBox1.Text = International.GetText("Form_Main_Group_Device_Rates");
         }
 
-        private void InitMainConfigGUIData() {
-            if (ConfigManager.GeneralConfig.ServiceLocation >= 0 && ConfigManager.GeneralConfig.ServiceLocation < Globals.MiningLocation.Length)
-                comboBoxLocation.SelectedIndex = ConfigManager.GeneralConfig.ServiceLocation;
-            else
-                comboBoxLocation.SelectedIndex = 0;
+        private void InitializeWalletSettings()
+        {
+            // Commit to config.json
+            // TODO: prevent flush this information to config file
+            ConfigManager.GeneralConfig.BitcoinAddress = GetBitcoinAddress();
+            ConfigManager.GeneralConfig.WorkerName = GetWorkerName();
+            ConfigManager.GeneralConfig.ServiceLocation = GetLocation();
+            ConfigManager.GeneralConfigFileCommit();
+        }
 
-            textBoxBTCAddress.Text = ConfigManager.GeneralConfig.BitcoinAddress;
-            textBoxWorkerName.Text = ConfigManager.GeneralConfig.WorkerName;
+        private int GetLocation()
+        {
+            return 0;
+        }
+
+        private string GetWorkerName()
+        {
+            return "worker-1";
+        }
+
+        private string GetBitcoinAddress()
+        {
+            return "3J85FLJrjyqz8Dsj5F9pJ9kkQkqJsByt15";
+        }
+
+        private void InitMainConfigGUIData()
+        {
             ShowWarningNiceHashData = true;
-            DemoMode = false;
 
             // init active display currency after config load
             ExchangeRateAPI.ActiveDisplayCurrency = ConfigManager.GeneralConfig.DisplayCurrency;
@@ -148,7 +128,8 @@ namespace NiceHashMiner
             toolStripStatusLabelBalanceText.Text = (ExchangeRateAPI.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
             BalanceCheck_Tick(null, null); // update currency changes
 
-            if (_isDeviceDetectionInitialized) {
+            if (_isDeviceDetectionInitialized)
+            {
                 devicesListViewEnableControl1.ResetComputeDevices(ComputeDeviceManager.Avaliable.AllAvaliableDevices);
             }
         }
@@ -184,23 +165,20 @@ namespace NiceHashMiner
                 if (BenchmarkForm == null && (MSIdle > (ConfigManager.GeneralConfig.MinIdleSeconds * 1000)))
                 {
                     Helpers.ConsolePrint("NICEHASH", "Entering idling state");
-                    if (StartMining(false) != StartMiningReturnType.StartMining) {
+                    if (StartMining(false) != StartMiningReturnType.StartMining)
+                    {
                         StopMining();
                     }
                 }
             }
         }
 
-        // This is a single shot _benchmarkTimer
-        private void StartupTimer_Tick(object sender, EventArgs e) {
-            StartupTimer.Stop();
-            StartupTimer = null;
-
-            // Internals Init
-            // TODO add loading step
+        private void StartupTimer_Tick()
+        {
             MinersSettingsManager.Init();
 
-            if (!Helpers.InternalCheckIsWow64()) {
+            if (!Helpers.InternalCheckIsWow64())
+            {
                 MessageBox.Show(International.GetText("Form_Main_x64_Support_Only"),
                                 International.GetText("Warning_with_Exclamation"),
                                 MessageBoxButtons.OK);
@@ -212,7 +190,8 @@ namespace NiceHashMiner
             // 3rdparty miners check scope #1
             {
                 // check if setting set
-                if (ConfigManager.GeneralConfig.Use3rdPartyMiners == Use3rdPartyMiners.NOT_SET) {
+                if (ConfigManager.GeneralConfig.Use3rdPartyMiners == Use3rdPartyMiners.NOT_SET)
+                {
                     // Show TOS
                     Form tos = new Form_3rdParty_TOS();
                     tos.ShowDialog(this);
@@ -242,15 +221,10 @@ namespace NiceHashMiner
             SMAMinerCheck = new Timer();
             SMAMinerCheck.Tick += SMAMinerCheck_Tick;
             SMAMinerCheck.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + R.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            if (ComputeDeviceManager.Group.ContainsAMD_GPUs) {
+            if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
+            {
                 SMAMinerCheck.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + R.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             }
-
-            UpdateCheck = new Timer();
-            UpdateCheck.Tick += UpdateCheck_Tick;
-            UpdateCheck.Interval = 1000 * 3600; // every 1 hour
-            UpdateCheck.Start();
-            UpdateCheck_Tick(null, null);
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_GetNiceHashSMA"));
 
@@ -260,8 +234,10 @@ namespace NiceHashMiner
             SMACheck.Start();
 
             // increase timeout
-            if (Globals.IsFirstNetworkCheckTimeout) {
-                while (!Helpers.WebRequestTestGoogle() && Globals.FirstNetworkCheckTimeoutTries > 0) {
+            if (Globals.IsFirstNetworkCheckTimeout)
+            {
+                while (!Helpers.WebRequestTestGoogle() && Globals.FirstNetworkCheckTimeoutTries > 0)
+                {
                     --Globals.FirstNetworkCheckTimeoutTries;
                 }
             }
@@ -292,9 +268,11 @@ namespace NiceHashMiner
             Helpers.DisableWindowsErrorReporting(ConfigManager.GeneralConfig.DisableWindowsErrorReporting);
 
             LoadingScreen.IncreaseLoadCounter();
-            if (ConfigManager.GeneralConfig.NVIDIAP0State) {
+            if (ConfigManager.GeneralConfig.NVIDIAP0State)
+            {
                 LoadingScreen.SetInfoMsg(International.GetText("Form_Main_loadtext_NVIDIAP0State"));
-                try {
+                try
+                {
                     ProcessStartInfo psi = new ProcessStartInfo();
                     psi.FileName = "nvidiasetp0state.exe";
                     psi.Verb = "runas";
@@ -306,7 +284,9 @@ namespace NiceHashMiner
                         Helpers.ConsolePrint("NICEHASH", "nvidiasetp0state returned error code: " + p.ExitCode.ToString());
                     else
                         Helpers.ConsolePrint("NICEHASH", "nvidiasetp0state all OK");
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     Helpers.ConsolePrint("NICEHASH", "nvidiasetp0state error: " + ex.Message);
                 }
             }
@@ -317,17 +297,20 @@ namespace NiceHashMiner
             // standard miners check scope
             {
                 // check if download needed
-                if (!MinersExistanceChecker.IsMinersBinsInit() && !ConfigManager.GeneralConfig.DownloadInit) {
+                if (!MinersExistanceChecker.IsMinersBinsInit() && !ConfigManager.GeneralConfig.DownloadInit)
+                {
                     Form_Loading downloadUnzipForm = new Form_Loading(new MinersDownloader(MinersDownloadManager.StandardDlSetup));
                     SetChildFormCenter(downloadUnzipForm);
                     downloadUnzipForm.ShowDialog();
                 }
                 // check if files are mising
-                if (!MinersExistanceChecker.IsMinersBinsInit()) {
+                if (!MinersExistanceChecker.IsMinersBinsInit())
+                {
                     var result = MessageBox.Show(International.GetText("Form_Main_bins_folder_files_missing"),
                         International.GetText("Warning_with_Exclamation"),
                         MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                    if (result == DialogResult.Yes) {
+                    if (result == DialogResult.Yes)
+                    {
                         ConfigManager.GeneralConfig.DownloadInit = false;
                         ConfigManager.GeneralConfigFileCommit();
                         Process PHandle = new Process();
@@ -336,7 +319,9 @@ namespace NiceHashMiner
                         Close();
                         return;
                     }
-                } else if (!ConfigManager.GeneralConfig.DownloadInit) {
+                }
+                else if (!ConfigManager.GeneralConfig.DownloadInit)
+                {
                     // all good
                     ConfigManager.GeneralConfig.DownloadInit = true;
                     ConfigManager.GeneralConfigFileCommit();
@@ -345,18 +330,22 @@ namespace NiceHashMiner
             // 3rdparty miners check scope #2
             {
                 // check if download needed
-                if (ConfigManager.GeneralConfig.Use3rdPartyMiners == Use3rdPartyMiners.YES) {
-                    if (!MinersExistanceChecker.IsMiners3rdPartyBinsInit() && !ConfigManager.GeneralConfig.DownloadInit3rdParty) {
+                if (ConfigManager.GeneralConfig.Use3rdPartyMiners == Use3rdPartyMiners.YES)
+                {
+                    if (!MinersExistanceChecker.IsMiners3rdPartyBinsInit() && !ConfigManager.GeneralConfig.DownloadInit3rdParty)
+                    {
                         Form_Loading download3rdPartyUnzipForm = new Form_Loading(new MinersDownloader(MinersDownloadManager.ThirdPartyDlSetup));
                         SetChildFormCenter(download3rdPartyUnzipForm);
                         download3rdPartyUnzipForm.ShowDialog();
                     }
                     // check if files are mising
-                    if (!MinersExistanceChecker.IsMiners3rdPartyBinsInit()) {
+                    if (!MinersExistanceChecker.IsMiners3rdPartyBinsInit())
+                    {
                         var result = MessageBox.Show(International.GetText("Form_Main_bins_folder_files_missing"),
                             International.GetText("Warning_with_Exclamation"),
                             MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                        if (result == DialogResult.Yes) {
+                        if (result == DialogResult.Yes)
+                        {
                             ConfigManager.GeneralConfig.DownloadInit3rdParty = false;
                             ConfigManager.GeneralConfigFileCommit();
                             Process PHandle = new Process();
@@ -365,7 +354,9 @@ namespace NiceHashMiner
                             Close();
                             return;
                         }
-                    } else if (!ConfigManager.GeneralConfig.DownloadInit3rdParty) {
+                    }
+                    else if (!ConfigManager.GeneralConfig.DownloadInit3rdParty)
+                    {
                         // all good
                         ConfigManager.GeneralConfig.DownloadInit3rdParty = true;
                         ConfigManager.GeneralConfigFileCommit();
@@ -373,28 +364,37 @@ namespace NiceHashMiner
                 }
             }
 
-            if (runVCRed) {
+            if (runVCRed)
+            {
                 Helpers.InstallVcRedist();
             }
 
             // no bots please
-            if (ConfigManager.GeneralConfigHwidLoadFromFile() && !ConfigManager.GeneralConfigHwidOK()) {
+            if (ConfigManager.GeneralConfigHwidLoadFromFile() && !ConfigManager.GeneralConfigHwidOK())
+            {
                 var result = MessageBox.Show("NiceHash Miner has detected change of hardware ID. If you did not download and install NiceHash Miner, your computer may be compromised. In that case, we suggest you to install an antivirus program or reinstall your Windows.\r\n\r\nContinue with NiceHash Miner?",
                     //International.GetText("Form_Main_msgbox_anti_botnet_msgbox"),
                     International.GetText("Warning_with_Exclamation"),
                     MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                if (result == System.Windows.Forms.DialogResult.No) {
+                if (result == System.Windows.Forms.DialogResult.No)
+                {
                     Close();
                     return;
-                } else {
+                }
+                else
+                {
                     // users agrees he installed it so commit changes
                     ConfigManager.GeneralConfigFileCommit();
                 }
-            } else {
-                if (ConfigManager.GeneralConfig.AutoStartMining) {
+            }
+            else
+            {
+                if (ConfigManager.GeneralConfig.AutoStartMining)
+                {
                     // well this is started manually as we want it to start at runtime
                     IsManuallyStarted = true;
-                    if (StartMining(true) != StartMiningReturnType.StartMining) {
+                    if (StartMining(true) != StartMiningReturnType.StartMining)
+                    {
                         IsManuallyStarted = false;
                         StopMining();
                     }
@@ -402,7 +402,8 @@ namespace NiceHashMiner
             }
         }
 
-        private void SetChildFormCenter(Form form) {
+        private void SetChildFormCenter(Form form)
+        {
             form.StartPosition = FormStartPosition.Manual;
             form.Location = new Point(this.Location.X + (this.Width - form.Width) / 2, this.Location.Y + (this.Height - form.Height) / 2);
         }
@@ -417,16 +418,14 @@ namespace NiceHashMiner
             SetChildFormCenter(LoadingScreen);
             LoadingScreen.Show();
 
-            StartupTimer = new Timer();
-            StartupTimer.Tick += StartupTimer_Tick;
-            StartupTimer.Interval = 200;
-            StartupTimer.Start();
+            StartupTimer_Tick();
         }
 
         private void SMAMinerCheck_Tick(object sender, EventArgs e)
         {
             SMAMinerCheck.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + R.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            if (ComputeDeviceManager.Group.ContainsAMD_GPUs) {
+            if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
+            {
                 SMAMinerCheck.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + R.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             }
 
@@ -437,79 +436,9 @@ namespace NiceHashMiner
         }
 
 
-        private void MinerStatsCheck_Tick(object sender, EventArgs e) {
+        private void MinerStatsCheck_Tick(object sender, EventArgs e)
+        {
             MinersManager.MinerStatsCheck(Globals.NiceHashData);
-        }
-
-        private void InitFlowPanelStart() {
-            flowLayoutPanelRates.Controls.Clear();
-            // add for every cdev a 
-            foreach (var cdev in ComputeDeviceManager.Avaliable.AllAvaliableDevices) {
-                if(cdev.Enabled) {
-                    var newGroupProfitControl = new GroupProfitControl();
-                    newGroupProfitControl.Visible = false;
-                    flowLayoutPanelRates.Controls.Add(newGroupProfitControl);
-                }
-            }
-        }
-
-        public void ClearRatesALL() {
-            HideNotProfitable();
-            ClearRates(-1);
-        }
-
-        public void ClearRates(int groupCount) {
-            if (flowLayoutPanelVisibleCount != groupCount) {
-                flowLayoutPanelVisibleCount = groupCount;
-                // hide some Controls
-                int hideIndex = 0;
-                foreach (var control in flowLayoutPanelRates.Controls) {
-                    ((GroupProfitControl)control).Visible = hideIndex < groupCount ? true : false;
-                    ++hideIndex;
-                }
-            }
-            flowLayoutPanelRatesIndex = 0;
-            int visibleGroupCount = 1;
-            if (groupCount > 0) visibleGroupCount += groupCount;
-
-            int groupBox1Height = EmtpyGroupPanelHeight;
-            if (flowLayoutPanelRates.Controls != null && flowLayoutPanelRates.Controls.Count > 0) {
-                var control = flowLayoutPanelRates.Controls[0];
-                float panelHeight = ((GroupProfitControl)control).Size.Height * 1.2f;
-                groupBox1Height = (int)((visibleGroupCount) * panelHeight);
-            }
-
-            groupBox1.Size = new Size(groupBox1.Size.Width, groupBox1Height);
-            // set new height
-            this.Size = new Size(this.Size.Width, MainFormHeight + groupBox1Height);
-        }
-
-        public void AddRateInfo(string groupName, string deviceStringInfo, APIData iAPIData, double paying, bool isApiGetException) {
-            string ApiGetExceptionString = isApiGetException ? "**" : "";
-
-            string speedString = Helpers.FormatDualSpeedOutput(iAPIData.Speed, iAPIData.SecondarySpeed) + iAPIData.AlgorithmName + ApiGetExceptionString;
-            if (iAPIData.AlgorithmID == AlgorithmType.Equihash) {
-                speedString = speedString.Replace("H/s", "Sols/s");
-            }
-            
-            string rateBTCString = FormatPayingOutput(paying);
-            string rateCurrencyString = ExchangeRateAPI.ConvertToActiveCurrency(paying * Globals.BitcoinUSDRate).ToString("F2", CultureInfo.InvariantCulture)
-                + String.Format(" {0}/", ExchangeRateAPI.ActiveDisplayCurrency) + International.GetText("Day");
-            
-            ((GroupProfitControl)flowLayoutPanelRates.Controls[flowLayoutPanelRatesIndex++])
-                .UpdateProfitStats(groupName, deviceStringInfo, speedString, rateBTCString, rateCurrencyString);
-
-            UpdateGlobalRate();
-        }
-
-        public void ShowNotProfitable(string msg) {
-            label_NotProfitable.Visible = true;
-            label_NotProfitable.Text = msg;
-            label_NotProfitable.Invalidate();
-        }
-        public void HideNotProfitable() {
-            label_NotProfitable.Visible = false;
-            label_NotProfitable.Invalidate();
         }
 
         private void UpdateGlobalRate()
@@ -533,28 +462,25 @@ namespace NiceHashMiner
 
         void BalanceCheck_Tick(object sender, EventArgs e)
         {
-            if (VerifyMiningAddress(false))
+            Helpers.ConsolePrint("NICEHASH", "Balance get");
+            double Balance = NiceHashStats.GetBalance(ConfigManager.GeneralConfig.BitcoinAddress, ConfigManager.GeneralConfig.BitcoinAddress + "." + ConfigManager.GeneralConfig.WorkerName);
+            if (Balance > 0)
             {
-                Helpers.ConsolePrint("NICEHASH", "Balance get");
-                double Balance = NiceHashStats.GetBalance(textBoxBTCAddress.Text.Trim(), textBoxBTCAddress.Text.Trim() + "." + textBoxWorkerName.Text.Trim());
-                if (Balance > 0)
+                if (ConfigManager.GeneralConfig.AutoScaleBTCValues && Balance < 0.1)
                 {
-                    if (ConfigManager.GeneralConfig.AutoScaleBTCValues && Balance < 0.1)
-                    {
-                        toolStripStatusLabelBalanceBTCCode.Text = "mBTC";
-                        toolStripStatusLabelBalanceBTCValue.Text = (Balance * 1000).ToString("F5", CultureInfo.InvariantCulture);
-                    }
-                    else
-                    {
-                        toolStripStatusLabelBalanceBTCCode.Text = "BTC";
-                        toolStripStatusLabelBalanceBTCValue.Text = Balance.ToString("F6", CultureInfo.InvariantCulture);
-                    }
-
-                    //Helpers.ConsolePrint("CurrencyConverter", "Using CurrencyConverter" + ConfigManager.Instance.GeneralConfig.DisplayCurrency);
-                    double Amount = (Balance * Globals.BitcoinUSDRate);
-                    Amount = ExchangeRateAPI.ConvertToActiveCurrency(Amount);
-                    toolStripStatusLabelBalanceDollarText.Text = Amount.ToString("F2", CultureInfo.InvariantCulture);
+                    toolStripStatusLabelBalanceBTCCode.Text = "mBTC";
+                    toolStripStatusLabelBalanceBTCValue.Text = (Balance * 1000).ToString("F5", CultureInfo.InvariantCulture);
                 }
+                else
+                {
+                    toolStripStatusLabelBalanceBTCCode.Text = "BTC";
+                    toolStripStatusLabelBalanceBTCValue.Text = Balance.ToString("F6", CultureInfo.InvariantCulture);
+                }
+
+                //Helpers.ConsolePrint("CurrencyConverter", "Using CurrencyConverter" + ConfigManager.Instance.GeneralConfig.DisplayCurrency);
+                double Amount = (Balance * Globals.BitcoinUSDRate);
+                Amount = ExchangeRateAPI.ConvertToActiveCurrency(Amount);
+                toolStripStatusLabelBalanceDollarText.Text = Amount.ToString("F2", CultureInfo.InvariantCulture);
             }
         }
 
@@ -562,7 +488,7 @@ namespace NiceHashMiner
         void BitcoinExchangeCheck_Tick(object sender, EventArgs e)
         {
             Helpers.ConsolePrint("NICEHASH", "Bitcoin rate get");
-            ExchangeRateAPI.UpdateAPI(textBoxWorkerName.Text.Trim());
+            ExchangeRateAPI.UpdateAPI(ConfigManager.GeneralConfig.WorkerName);
             double BR = ExchangeRateAPI.GetUSDExchangeRate();
             if (BR > 0) Globals.BitcoinUSDRate = BR;
             Helpers.ConsolePrint("NICEHASH", "Current Bitcoin rate: " + Globals.BitcoinUSDRate.ToString("F2", CultureInfo.InvariantCulture));
@@ -571,13 +497,15 @@ namespace NiceHashMiner
 
         void SMACheck_Tick(object sender, EventArgs e)
         {
-            string worker = textBoxBTCAddress.Text.Trim() + "." + textBoxWorkerName.Text.Trim();
+            string worker = ConfigManager.GeneralConfig.BitcoinAddress + "." + ConfigManager.GeneralConfig.WorkerName;
             Helpers.ConsolePrint("NICEHASH", "SMA get");
             Dictionary<AlgorithmType, NiceHashSMA> t = null;
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 5; i++)
+            {
                 t = NiceHashStats.GetAlgorithmRates(worker);
-                if (t != null) {
+                if (t != null)
+                {
                     Globals.NiceHashData = t;
                     break;
                 }
@@ -587,7 +515,8 @@ namespace NiceHashMiner
                 t = NiceHashStats.GetAlgorithmRates(worker);
             }
 
-            if (t == null && Globals.NiceHashData == null && ShowWarningNiceHashData) {
+            if (t == null && Globals.NiceHashData == null && ShowWarningNiceHashData)
+            {
                 ShowWarningNiceHashData = false;
                 DialogResult dialogResult = MessageBox.Show(International.GetText("Form_Main_msgbox_NoInternetMsg"),
                                                             International.GetText("Form_Main_msgbox_NoInternetTitle"),
@@ -600,92 +529,23 @@ namespace NiceHashMiner
             }
         }
 
-
-        void UpdateCheck_Tick(object sender, EventArgs e)
-        {
-            Helpers.ConsolePrint("NICEHASH", "Version get");
-            string ver = NiceHashStats.GetVersion(textBoxBTCAddress.Text.Trim() + "." + textBoxWorkerName.Text.Trim());
-
-            if (ver == null) return;
-
-            Version programVersion = new Version(Application.ProductVersion);
-            Version onlineVersion = new Version(ver);
-            int ret = programVersion.CompareTo(onlineVersion);
-
-            if (ret < 0)
-            {
-                linkLabelVisitUs.Text = String.Format(International.GetText("Form_Main_new_version_released"), ver);
-                VisitURL = Links.VisitURLNew + ver;
-            }
-        }
-
-        private bool VerifyMiningAddress(bool ShowError)
-        {
-            if (!BitcoinAddress.ValidateBitcoinAddress(textBoxBTCAddress.Text.Trim()) && ShowError)
-            {
-                DialogResult result = MessageBox.Show(International.GetText("Form_Main_msgbox_InvalidBTCAddressMsg"),
-                                                      International.GetText("Error_with_Exclamation"),
-                                                      MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-                
-                if (result == System.Windows.Forms.DialogResult.Yes)
-                    System.Diagnostics.Process.Start(Links.NHM_BTC_Wallet_Faq);
-                
-                textBoxBTCAddress.Focus();
-                return false;
-            }
-            else if (!BitcoinAddress.ValidateWorkerName(textBoxWorkerName.Text.Trim()) && ShowError)
-            {
-                DialogResult result = MessageBox.Show(International.GetText("Form_Main_msgbox_InvalidWorkerNameMsg"),
-                                                      International.GetText("Error_with_Exclamation"),
-                                                      MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                textBoxWorkerName.Focus();
-                return false;
-            }
-
-            return true;
-        }
-
-
-        private void linkLabelVisitUs_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(VisitURL);
-        }
-
-
-        private void linkLabelCheckStats_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            if (!VerifyMiningAddress(true)) return;
-
-            System.Diagnostics.Process.Start(Links.CheckStats + textBoxBTCAddress.Text.Trim());
-        }
-
-
-        private void linkLabelChooseBTCWallet_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(Links.NHM_BTC_Wallet_Faq);
-        }
-
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             MinersManager.StopAllMiners();
 
             MessageBoxManager.Unregister();
-        }        
+        }
 
         private void buttonBenchmark_Click(object sender, EventArgs e)
         {
-            ConfigManager.GeneralConfig.ServiceLocation = comboBoxLocation.SelectedIndex;
-
             BenchmarkForm = new Form_Benchmark();
             SetChildFormCenter(BenchmarkForm);
             BenchmarkForm.ShowDialog();
             bool startMining = BenchmarkForm.StartMining;
             BenchmarkForm = null;
-
             InitMainConfigGUIData();
-            if (startMining) {
+            if (startMining)
+            {
                 buttonStartMining_Click(null, null);
             }
         }
@@ -697,7 +557,8 @@ namespace NiceHashMiner
             SetChildFormCenter(Settings);
             Settings.ShowDialog();
 
-            if (Settings.IsChange && Settings.IsChangeSaved && Settings.IsRestartNeeded) {
+            if (Settings.IsChange && Settings.IsChangeSaved && Settings.IsRestartNeeded)
+            {
                 MessageBox.Show(
                     International.GetText("Form_Main_Restart_Required_Msg"),
                     International.GetText("Form_Main_Restart_Required_Title"),
@@ -706,15 +567,19 @@ namespace NiceHashMiner
                 PHandle.StartInfo.FileName = Application.ExecutablePath;
                 PHandle.Start();
                 Close();
-            } else if (Settings.IsChange && Settings.IsChangeSaved) {
+            }
+            else if (Settings.IsChange && Settings.IsChangeSaved)
+            {
                 InitLocalization();
                 InitMainConfigGUIData();
             }
         }
 
-        private void buttonStartMining_Click(object sender, EventArgs e) {
+        private void buttonStartMining_Click(object sender, EventArgs e)
+        {
             IsManuallyStarted = true;
-            if (StartMining(true) == StartMiningReturnType.ShowNoMining) {
+            if (StartMining(true) == StartMiningReturnType.ShowNoMining)
+            {
                 IsManuallyStarted = false;
                 StopMining();
                 MessageBox.Show(International.GetText("Form_Main_StartMiningReturnedFalse"),
@@ -724,7 +589,8 @@ namespace NiceHashMiner
         }
 
 
-        private void buttonStopMining_Click(object sender, EventArgs e) {
+        private void buttonStopMining_Click(object sender, EventArgs e)
+        {
             IsManuallyStarted = false;
             StopMining();
         }
@@ -739,12 +605,6 @@ namespace NiceHashMiner
                 ret = paying.ToString("F6", CultureInfo.InvariantCulture) + " BTC/" + International.GetText("Day");
 
             return ret;
-        }
-
-
-        private void buttonHelp_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start(Links.NHM_Help);
         }
 
         private void toolStripStatusLabel10_Click(object sender, EventArgs e)
@@ -762,20 +622,8 @@ namespace NiceHashMiner
             statusStrip1.Cursor = Cursors.Default;
         }
 
-        private void textBoxCheckBoxMain_Leave(object sender, EventArgs e)
-        {
-            if (VerifyMiningAddress(false))
-            {
-                // Commit to config.json
-                ConfigManager.GeneralConfig.BitcoinAddress = textBoxBTCAddress.Text.Trim();
-                ConfigManager.GeneralConfig.WorkerName = textBoxWorkerName.Text.Trim();
-                ConfigManager.GeneralConfig.ServiceLocation = comboBoxLocation.SelectedIndex;
-                ConfigManager.GeneralConfigFileCommit();
-            }
-        }
-
         // Minimize to system tray if MinimizeToTray is set to true
-        private void Form1_Resize(object sender, EventArgs e)
+        private void FormMain_Resize(object sender, EventArgs e)
         {
             notifyIcon1.Icon = Properties.Resources.logo;
             notifyIcon1.Text = Application.ProductName + " v" + Application.ProductVersion + "\nDouble-click to restore..";
@@ -797,50 +645,29 @@ namespace NiceHashMiner
 
         ///////////////////////////////////////
         // Miner control functions
-        private enum StartMiningReturnType {
+        private enum StartMiningReturnType
+        {
             StartMining,
             ShowNoMining,
             IgnoreMsg
         }
 
-        private StartMiningReturnType StartMining(bool showWarnings) {
-            if (textBoxBTCAddress.Text.Equals("")) {
-                if (showWarnings) {
-                    DialogResult result = MessageBox.Show(International.GetText("Form_Main_DemoModeMsg"),
-                                                      International.GetText("Form_Main_DemoModeTitle"),
-                                                      MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-                    if (result == System.Windows.Forms.DialogResult.Yes) {
-                        DemoMode = true;
-                        labelDemoMode.Visible = true;
-                        labelDemoMode.Text = International.GetText("Form_Main_DemoModeLabel");
-                    } else {
-                        return StartMiningReturnType.IgnoreMsg;
-                    }
-                } else {
-                    return StartMiningReturnType.IgnoreMsg; ;
-                }
-            } else if (!VerifyMiningAddress(true)) return StartMiningReturnType.IgnoreMsg;
-
-            if (Globals.NiceHashData == null) {
-                if (showWarnings) {
-                    MessageBox.Show(International.GetText("Form_Main_msgbox_NullNiceHashDataMsg"),
-                                International.GetText("Error_with_Exclamation"),
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                return StartMiningReturnType.IgnoreMsg;
-            }
-
-
+        private StartMiningReturnType StartMining(bool showWarnings)
+        {
             // Check if there are unbenchmakred algorithms
             bool isBenchInit = true;
             bool hasAnyAlgoEnabled = false;
-            foreach (var cdev in ComputeDeviceManager.Avaliable.AllAvaliableDevices) {
-                if (cdev.Enabled) {
-                    foreach (var algo in cdev.GetAlgorithmSettings()) {
-                        if (algo.Enabled == true) {
+            foreach (var cdev in ComputeDeviceManager.Avaliable.AllAvaliableDevices)
+            {
+                if (cdev.Enabled)
+                {
+                    foreach (var algo in cdev.GetAlgorithmSettings())
+                    {
+                        if (algo.Enabled == true)
+                        {
                             hasAnyAlgoEnabled = true;
-                            if (algo.BenchmarkSpeed == 0) {
+                            if (algo.BenchmarkSpeed == 0)
+                            {
                                 isBenchInit = false;
                                 break;
                             }
@@ -849,11 +676,13 @@ namespace NiceHashMiner
                 }
             }
             // Check if the user has run benchmark first
-            if (!isBenchInit) {
+            if (!isBenchInit)
+            {
                 DialogResult result = MessageBox.Show(International.GetText("EnabledUnbenchmarkedAlgorithmsWarning"),
                                                           International.GetText("Warning_with_Exclamation"),
                                                           MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-                if (result == System.Windows.Forms.DialogResult.Yes) {
+                if (result == DialogResult.Yes)
+                {
                     BenchmarkForm = new Form_Benchmark(
                         BenchmarkPerformanceType.Standard,
                         true);
@@ -861,13 +690,19 @@ namespace NiceHashMiner
                     BenchmarkForm.ShowDialog();
                     BenchmarkForm = null;
                     InitMainConfigGUIData();
-                } else if (result == System.Windows.Forms.DialogResult.No) {
+                }
+                else if (result == System.Windows.Forms.DialogResult.No)
+                {
                     // check devices without benchmarks
-                    foreach (var cdev in ComputeDeviceManager.Avaliable.AllAvaliableDevices) {
-                        if (cdev.Enabled) {
+                    foreach (var cdev in ComputeDeviceManager.Avaliable.AllAvaliableDevices)
+                    {
+                        if (cdev.Enabled)
+                        {
                             bool Enabled = false;
-                            foreach (var algo in cdev.GetAlgorithmSettings()) {
-                                if (algo.BenchmarkSpeed > 0) {
+                            foreach (var algo in cdev.GetAlgorithmSettings())
+                            {
+                                if (algo.BenchmarkSpeed > 0)
+                                {
                                     Enabled = true;
                                     break;
                                 }
@@ -875,31 +710,27 @@ namespace NiceHashMiner
                             cdev.Enabled = Enabled;
                         }
                     }
-                } else {
+                }
+                else
+                {
                     return StartMiningReturnType.IgnoreMsg;
                 }
             }
 
-            textBoxBTCAddress.Enabled = false;
-            textBoxWorkerName.Enabled = false;
-            comboBoxLocation.Enabled = false;
             buttonBenchmark.Enabled = false;
             buttonStartMining.Enabled = false;
             buttonSettings.Enabled = false;
             devicesListViewEnableControl1.IsMining = true;
             buttonStopMining.Enabled = true;
 
-            ConfigManager.GeneralConfig.BitcoinAddress = textBoxBTCAddress.Text.Trim();
-            ConfigManager.GeneralConfig.WorkerName = textBoxWorkerName.Text.Trim();
-            ConfigManager.GeneralConfig.ServiceLocation = comboBoxLocation.SelectedIndex;
+            ConfigManager.GeneralConfig.BitcoinAddress = GetBitcoinAddress();
 
-            InitFlowPanelStart();
-            ClearRatesALL();
+            var isMining = MinersManager.StartInitialize(
+                Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation],
+                ConfigManager.GeneralConfig.WorkerName,
+                ConfigManager.GeneralConfig.BitcoinAddress);
 
-            var btcAdress = DemoMode ? Globals.DemoUser : textBoxBTCAddress.Text.Trim();
-            var isMining = MinersManager.StartInitialize(this, Globals.MiningLocation[comboBoxLocation.SelectedIndex], textBoxWorkerName.Text.Trim(), btcAdress);
-
-            if (!DemoMode) ConfigManager.GeneralConfigFileCommit();
+            ConfigManager.GeneralConfigFileCommit();
 
             SMAMinerCheck.Interval = 100;
             SMAMinerCheck.Start();
@@ -908,27 +739,30 @@ namespace NiceHashMiner
             return isMining ? StartMiningReturnType.StartMining : StartMiningReturnType.ShowNoMining;
         }
 
-        private void StopMining() {
+        private void StopMining()
+        {
             MinerStatsCheck.Stop();
             SMAMinerCheck.Stop();
 
             MinersManager.StopAllMiners();
 
-            textBoxBTCAddress.Enabled = true;
-            textBoxWorkerName.Enabled = true;
-            comboBoxLocation.Enabled = true;
             buttonBenchmark.Enabled = true;
             buttonStartMining.Enabled = true;
             buttonSettings.Enabled = true;
             devicesListViewEnableControl1.IsMining = false;
             buttonStopMining.Enabled = false;
 
-            if (DemoMode) {
-                DemoMode = false;
-                labelDemoMode.Visible = false;
-            }
-
             UpdateGlobalRate();
+        }
+
+        public void ShowNotProfitable(string msg)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void HideNotProfitable()
+        {
+            throw new NotImplementedException();
         }
     }
 }

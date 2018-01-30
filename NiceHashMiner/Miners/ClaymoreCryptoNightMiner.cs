@@ -38,12 +38,14 @@ namespace NiceHashMiner.Miners {
 
             // network workaround
             string url = Globals.GetLocationURL(algorithm.NiceHashID, Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation], this.ConectionType);
-            // demo for benchmark
-            string username = Globals.DemoUser;
+            string username = ConfigManager.GeneralConfig.BitcoinAddress;
             if (ConfigManager.GeneralConfig.WorkerName.Length > 0)
                 username += "." + ConfigManager.GeneralConfig.WorkerName.Trim();
-
-            string ret = " " + GetDevicesCommandString() + " -mport -" + APIPort + " -o " + url + " -u " + username + " -p x";
+   
+            string ret = " " + GetDevicesCommandString() +  
+                " -mport -" + APIPort + 
+                " -o " + url + 
+                " -u " + username + " -p x";
             return ret;
         }
 

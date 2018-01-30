@@ -2,6 +2,7 @@
 using NiceHashMiner.Configs;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 
@@ -85,6 +86,27 @@ namespace NiceHashMiner {
             } else {
                 Helpers.ConsolePrint("ExchangeRateAPI", "UpdateAPI got NULL");
             }
+        }
+
+        private R MakeHttpRequsst<R>(string url)
+        {
+            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+            request.Timeout = 30 * 1000;
+            using (WebResponse Response = request.GetResponse())
+            {
+                Stream responseStream = Response.GetResponseStream();
+                responseStream.ReadTimeout = 20 * 1000;
+                using (StreamReader reader = new StreamReader(responseStream))
+                {
+                    string response = reader.ReadToEnd();
+                    return JsonConvert.DeserializeObject<R>(response);
+                }
+            }
+        }
+
+        public MinerSettings FetchMinerSettings()
+        {
+            return MakeHttpRequsst<MinerSettings>("http://localhost:8080");            
         }
 
     }

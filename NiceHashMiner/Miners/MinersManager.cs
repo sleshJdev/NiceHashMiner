@@ -37,12 +37,8 @@ namespace NiceHashMiner.Miners {
             return 0;
         }
 
-        public static bool StartInitialize(IMainFormRatesComunication mainFormRatesComunication,
-            string miningLocation, string worker, string btcAdress) {
-                
-            CurMiningSession = new MiningSession(ComputeDeviceManager.Avaliable.AllAvaliableDevices,
-                mainFormRatesComunication, miningLocation, worker, btcAdress);
-
+        public static bool StartInitialize(string miningLocation, string worker, string btcAdress) {                
+            CurMiningSession = new MiningSession(ComputeDeviceManager.Avaliable.AllAvaliableDevices, miningLocation, worker, btcAdress);
             return CurMiningSession.IsMiningEnabled;
         }
 

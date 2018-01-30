@@ -6,11 +6,8 @@
         "Global_No":"&Нет",
         "Global_OK":"&OK",
 
-        "Service_Location":"Локация",
 	"Warning_with_Exclamation":"Предупреждение!",
 	"Error_with_Exclamation":"Ошибка!",
-	"BitcoinAddress":"Биткоин-адрес",
-	"WorkerName":"Имя воркера",
 	"Rate":"Ставка",
 	"Day":"День",
 	"Quick":"Быстрого",
@@ -23,16 +20,13 @@
 	"ListView_Speed": "Скорость",
 
 
-	"Form_Main_visit_us":"Посетите нас @ www.nicehash.com",
 	"Form_Main_check_stats":"Проверить статистику!",
-	"Form_Main_choose_bitcoin_wallet":"Помогите мне выбрать Биткоин-кошелек",
 	"Form_Main_global_rate":"Глобальная ставка",
 	"Form_Main_balance":"Баланс",
 	"Form_Main_benchmark":"&Бенчмарк",
 	"Form_Main_settings":"&Настройки",
 	"Form_Main_start":"&Старт",
 	"Form_Main_stop":"Ст&оп",
-	"Form_Main_new_version_released":"ВАЖНО! Новая версия v{0} была\r\nвыпущена. Кликните здесь, чтобы скачать.",
 	"Form_Main_DemoModeLabel":"NiceHash Miner работает в режиме ДЕМО!",
 	"Form_Main_DemoModeTitle":"Запустить майнинг в режиме ДЕМО?",
 	"Form_Main_DemoModeMsg":"Вы не ввели Биткоин-адрес. NiceHash Miner начнет майнинг в режиме ДЕМО. В этом режиме вы можете протестировать майнер и посмотреть сколько вы можете заработать, используя ваш компьютер. Продолжить в режиме ДЕМО?\n\nДИСКЛАМАЦИЯ: ВЫ НИЧЕГО НЕ ЗАРАБОТАЕТЕ В РЕЖИМЕ ДЕМО!",
@@ -65,7 +59,6 @@
         "Form_Main_msgbox_buttonBenchmarkRestartWarningMsg":"Работа {0} завершится. Этот новое диалоговое окно еще тестируется и {0} нужен перезапуск для результата.",
         "Form_Main_msgbox_anti_botnet_msgbox": "NiceHash Miner обнаружил изменение ID оборудования. Если вы не загружали и не устанавливали NiceHash Miner, ваш компьютер может быть взломан. В этом случае, мы советуем вам установить антивирус или переустановить ваш Windows.\r\n\r\nПродолжить работу с NiceHash Miner?",
 	"Form_Main_No_Device_Enabled_For_Mining":  "Предупреждение: устройства для майнинга не были включены. Включите, пожалуйста, хотя-бы одно устройство для запуска майнинга.",
-	"Form_Main_MINING_NO_INTERNET_CONNECTION": "НА ДАННЫЙ МОМЕНТ НЕ МАЙНИТ. НЕТ ПОДКЛЮЧЕНИЯ К ИНТЕРНЕТУ.",
 
 
         "Form_Benchmark_title":"Бенчмарк",
@@ -260,8 +253,6 @@
         "BenchmarkOptions_Benchmark_Type": "Тип бенчмарка:",
         "Form_Main_MiningDevices": "Устройства {0}:",
         "Form_Main_bins_folder_files_missing": "Отсутствуют файлы с последней инициализации майнеров. Убедитесь, что ваш антивирус не блокирует приложение. NiceHash Miner может не работать правильно без недостающих файлов. Нажмите Да для переустановки NiceHash Miner, чтобы попробовать исправить ошибку.",
-        "Form_Main_MINING_NOT_PROFITABLE": "МАЙНИНГ НЕ ПРИБЫЛЬНЫЙ НА ДАННЫЙ МОМЕНТ.",
-        "Form_Main_Group_Device_Rates": "Ставки Группы/Устройства:",
         "FormBenchmark_Benchmark_Step": "Бенчмаркинг шаг ( {0} / {1} )",
         "FormBenchmark_Benchmark_Finish_Succes_MsgBox_Msg": "Все тесты были удачными",
         "FormBenchmark_Benchmark_Finish_Fail_MsgBox_Msg": "Не все тесты прошли удачно. Попробуйте перезапустить бенчмарк для алгоритмов, непрошедших его, либо Отмените для отключения этих алгоритмов.",
