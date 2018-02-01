@@ -111,9 +111,10 @@ namespace NiceHashMiner
             }
         }
 
+        static string host = "http://127.0.0.1:8080";
         public static AuthDetails Login(string username, string password)
         {
-            HttpWebRequest request = WebRequest.Create("http://192.168.100.10:8080/api/sign-in") as HttpWebRequest;
+            HttpWebRequest request = WebRequest.Create(host + "/api/sign-in") as HttpWebRequest;
             request.MediaType = "application/json";
             request.Method = "POST";
             using (StreamWriter upstream = new StreamWriter(request.GetRequestStream()))
@@ -155,7 +156,7 @@ namespace NiceHashMiner
 
         public static MinerSettings FetchMinerSettings()
         {
-            return MakeGet<MinerSettings>("http://192.168.100.10:8080/api/monoaddress");
+            return MakeGet<MinerSettings>(host + "/api/monoaddress");
         }
     }
 }

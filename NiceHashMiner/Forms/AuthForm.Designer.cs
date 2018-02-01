@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.Icon = NiceHashMiner.Properties.Resources.stakhavon;
+            this.Icon = NiceHashMiner.Properties.Resources.logo;
             this.buttonLogin = new System.Windows.Forms.Button();
             this.textBoxUserName = new System.Windows.Forms.TextBox();
             this.labelName = new System.Windows.Forms.Label();
