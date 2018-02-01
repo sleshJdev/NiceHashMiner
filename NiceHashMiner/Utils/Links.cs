@@ -4,6 +4,7 @@ using System.Text;
 
 namespace NiceHashMiner {
     public static class Links {
+        public static string WalletAddress = "http://192.168.100.10:8080/api/wallet";
         public static string VisitURL = "https://www.nicehash.com?utm_source=NHM";
         // add version
         public static string VisitURLNew = "https://github.com/nicehash/NiceHashMiner/releases/tag/";

@@ -19,9 +19,7 @@
 	"ListView_Algorithm": "Алгоритм",
 	"ListView_Speed": "Скорость",
 
-
 	"Form_Main_check_stats":"Проверить статистику!",
-	"Form_Main_global_rate":"Глобальная ставка",
 	"Form_Main_balance":"Баланс",
 	"Form_Main_benchmark":"&Бенчмарк",
 	"Form_Main_settings":"&Настройки",

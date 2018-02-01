@@ -16,6 +16,7 @@ using System.Globalization;
 using NiceHashMiner.Utils;
 using NiceHashMiner.Miners.Grouping;
 using NiceHashMiner.Net20_backport;
+using System.ComponentModel;
 
 namespace NiceHashMiner.Devices
 {
@@ -883,11 +884,10 @@ namespace NiceHashMiner.Devices
             
 
             public static void QueryAndLog() {
-                ObjectQuery winQuery = new ObjectQuery("SELECT * FROM Win32_OperatingSystem");
-
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher(winQuery);
-
-                foreach (ManagementObject item in searcher.Get()) {
+                ObjectQuery query = new ObjectQuery("SELECT * FROM Win32_OperatingSystem");
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+                ManagementObjectCollection components = searcher.Get();
+                foreach (ManagementBaseObject item in components) {
                     if (item["FreePhysicalMemory"] != null) UInt64.TryParse(item["FreePhysicalMemory"].ToString(), out FreePhysicalMemory);
                     if (item["FreeSpaceInPagingFiles"] != null) UInt64.TryParse(item["FreeSpaceInPagingFiles"].ToString(), out FreeSpaceInPagingFiles);
                     if (item["FreeVirtualMemory"] != null) UInt64.TryParse(item["FreeVirtualMemory"].ToString(), out FreeVirtualMemory);

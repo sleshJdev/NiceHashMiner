@@ -22,43 +22,27 @@ namespace NiceHashMiner
     public partial class Form_Main : Form, Form_Loading.IAfterInitializationCaller
     {
         private static string VisitURL = Links.VisitURL;
-
         private Timer MinerStatsCheck;
         private SystemTimer SMACheck;
         private Timer BalanceCheck;
         private Timer SMAMinerCheck;
         private Timer BitcoinExchangeCheck;
-        private Timer StartupTimer;
         private Timer IdleCheck;
-
         private bool ShowWarningNiceHashData;
-
-        private Random R = new Random((int)DateTime.Now.Ticks);
-
+        private Random randomizer = new Random((int)DateTime.Now.Ticks);
         private Form_Loading LoadingScreen;
         private Form_Benchmark BenchmarkForm;
-
-        int flowLayoutPanelVisibleCount = 0;
-        int flowLayoutPanelRatesIndex = 0;
-
         const string _betaAlphaPostfixString = "";
-
         private bool _isDeviceDetectionInitialized = false;
-
         private bool IsManuallyStarted = false;
-
-        int MainFormHeight = 0;
-        int EmtpyGroupPanelHeight = 0;
 
         public Form_Main()
         {
+            InitMinerSettings();
             InitializeComponent();
-            this.Icon = NiceHashMiner.Properties.Resources.logo;
-
             InitLocalization();
-
+            InitMainConfigGUIData();            
             ComputeDeviceManager.SystemSpecs.QueryAndLog();
-
             // Log the computer's amount of Total RAM and Page File Size
             ManagementObjectCollection moc = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_OperatingSystem").Get();
             foreach (ManagementObject mo in moc)
@@ -67,39 +51,31 @@ namespace NiceHashMiner
                 long PageFileSize = (long.Parse(mo["TotalVirtualMemorySize"].ToString()) / 1024) - TotalRam;
                 Helpers.ConsolePrint("NICEHASH", "Total RAM: " + TotalRam + "MB");
                 Helpers.ConsolePrint("NICEHASH", "Page File Size: " + PageFileSize + "MB");
-            }
+            }            
+        }
 
-            InitMainConfigGUIData();
+        private void IsAuthorized()
+        {
+
+        }
+
+        private void InitMinerSettings()
+        {
+            DialogResult loginResult = new AuthForm().ShowDialog(this);
+            MinerSettings minerSettings = ExchangeRateAPI.FetchMinerSettings();
+            ConfigManager.GeneralConfig.BitcoinAddress = GetBitcoinAddress();
+            ConfigManager.GeneralConfig.WorkerName = GetWorkerName();
+            ConfigManager.GeneralConfig.ServiceLocation = GetLocation();
+
         }
 
         private void InitLocalization()
         {
             MessageBoxManager.Unregister();
-            MessageBoxManager.Yes = International.GetText("Global_Yes");
-            MessageBoxManager.No = International.GetText("Global_No");
-            MessageBoxManager.OK = International.GetText("Global_OK");
             MessageBoxManager.Register();
 
-            toolStripStatusLabelGlobalRateText.Text = International.GetText("Form_Main_global_rate") + ":";
-            toolStripStatusLabelBTCDayText.Text = "BTC/" + International.GetText("Day");
             toolStripStatusLabelBalanceText.Text = (ExchangeRateAPI.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
-
             devicesListViewEnableControl1.InitLocale();
-
-            buttonBenchmark.Text = International.GetText("Form_Main_benchmark");
-            buttonSettings.Text = International.GetText("Form_Main_settings");
-            buttonStartMining.Text = International.GetText("Form_Main_start");
-            buttonStopMining.Text = International.GetText("Form_Main_stop");
-        }
-
-        private void InitializeWalletSettings()
-        {
-            // Commit to config.json
-            // TODO: prevent flush this information to config file
-            ConfigManager.GeneralConfig.BitcoinAddress = GetBitcoinAddress();
-            ConfigManager.GeneralConfig.WorkerName = GetWorkerName();
-            ConfigManager.GeneralConfig.ServiceLocation = GetLocation();
-            ConfigManager.GeneralConfigFileCommit();
         }
 
         private int GetLocation()
@@ -220,10 +196,10 @@ namespace NiceHashMiner
 
             SMAMinerCheck = new Timer();
             SMAMinerCheck.Tick += SMAMinerCheck_Tick;
-            SMAMinerCheck.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + R.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            SMAMinerCheck.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
             {
-                SMAMinerCheck.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + R.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+                SMAMinerCheck.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             }
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_GetNiceHashSMA"));
@@ -423,10 +399,10 @@ namespace NiceHashMiner
 
         private void SMAMinerCheck_Tick(object sender, EventArgs e)
         {
-            SMAMinerCheck.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + R.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            SMAMinerCheck.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
             {
-                SMAMinerCheck.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + R.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+                SMAMinerCheck.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             }
 
 #if (SWITCH_TESTING)
@@ -440,25 +416,6 @@ namespace NiceHashMiner
         {
             MinersManager.MinerStatsCheck(Globals.NiceHashData);
         }
-
-        private void UpdateGlobalRate()
-        {
-            double TotalRate = MinersManager.GetTotalRate();
-
-            if (ConfigManager.GeneralConfig.AutoScaleBTCValues && TotalRate < 0.1)
-            {
-                toolStripStatusLabelBTCDayText.Text = "mBTC/" + International.GetText("Day");
-                toolStripStatusLabelGlobalRateValue.Text = (TotalRate * 1000).ToString("F5", CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                toolStripStatusLabelBTCDayText.Text = "BTC/" + International.GetText("Day");
-                toolStripStatusLabelGlobalRateValue.Text = (TotalRate).ToString("F6", CultureInfo.InvariantCulture);
-            }
-
-            toolStripStatusLabelBTCDayValue.Text = ExchangeRateAPI.ConvertToActiveCurrency((TotalRate * Globals.BitcoinUSDRate)).ToString("F2", CultureInfo.InvariantCulture);
-        }
-
 
         void BalanceCheck_Tick(object sender, EventArgs e)
         {
@@ -625,7 +582,7 @@ namespace NiceHashMiner
         // Minimize to system tray if MinimizeToTray is set to true
         private void FormMain_Resize(object sender, EventArgs e)
         {
-            notifyIcon1.Icon = Properties.Resources.logo;
+            notifyIcon1.Icon = NiceHashMiner.Properties.Resources.stakhavonLogo;
             notifyIcon1.Text = Application.ProductName + " v" + Application.ProductVersion + "\nDouble-click to restore..";
 
             if (ConfigManager.GeneralConfig.MinimizeToTray && FormWindowState.Minimized == this.WindowState)
@@ -751,8 +708,6 @@ namespace NiceHashMiner
             buttonSettings.Enabled = true;
             devicesListViewEnableControl1.IsMining = false;
             buttonStopMining.Enabled = false;
-
-            UpdateGlobalRate();
         }
 
         public void ShowNotProfitable(string msg)

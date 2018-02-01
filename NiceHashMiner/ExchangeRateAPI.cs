@@ -1,14 +1,19 @@
 ﻿using Newtonsoft.Json;
 using NiceHashMiner.Configs;
+using NiceHashMiner.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 
-namespace NiceHashMiner {
-    class ExchangeRateAPI {
-        public class Result {
+namespace NiceHashMiner
+{
+    class ExchangeRateAPI
+    {
+        public class Result
+        {
             public Object algorithms { get; set; }
             public Object servers { get; set; }
             public Object idealratios { get; set; }
@@ -16,7 +21,8 @@ namespace NiceHashMiner {
             public Dictionary<string, double> exchanges_fiat { get; set; }
         }
 
-        public class ExchangeRateJSON {
+        public class ExchangeRateJSON
+        {
             public Result result { get; set; }
             public string method { get; set; }
         }
@@ -27,18 +33,22 @@ namespace NiceHashMiner {
         private static double USD_BTC_rate = -1;
         public static string ActiveDisplayCurrency = "USD";
 
-        private static bool ConverterActive {
+        private static bool ConverterActive
+        {
             get { return ConfigManager.GeneralConfig.DisplayCurrency != "USD"; }
         }
 
 
-        public static double ConvertToActiveCurrency(double amount) {
-            if (!ConverterActive) {
+        public static double ConvertToActiveCurrency(double amount)
+        {
+            if (!ConverterActive)
+            {
                 return amount;
             }
 
             // if we are still null after an update something went wrong. just use USD hopefully itll update next tick
-            if (exchanges_fiat == null || ActiveDisplayCurrency == "USD") {
+            if (exchanges_fiat == null || ActiveDisplayCurrency == "USD")
+            {
                 Helpers.ConsolePrint("CurrencyConverter", "Unable to retrieve update, Falling back to USD");
                 return amount;
             }
@@ -47,67 +57,105 @@ namespace NiceHashMiner {
             double usdExchangeRate = 1.0;
             if (exchanges_fiat.TryGetValue(ActiveDisplayCurrency, out usdExchangeRate))
                 return amount * usdExchangeRate;
-            else {
+            else
+            {
                 Helpers.ConsolePrint("CurrencyConverter", "Unknown Currency Tag: " + ActiveDisplayCurrency + " falling back to USD rates");
                 ActiveDisplayCurrency = "USD";
                 return amount;
             }
         }
 
-        public static double GetUSDExchangeRate() {
-            if (USD_BTC_rate > 0) {
+        public static double GetUSDExchangeRate()
+        {
+            if (USD_BTC_rate > 0)
+            {
                 return USD_BTC_rate;
             }
             return 0.0;
         }
 
-        public static void UpdateAPI(string worker) {
+        public static void UpdateAPI(string worker)
+        {
             string resp = NiceHashStats.GetNiceHashAPIData(apiUrl, worker);
-            if (resp != null) {
-                try {
+            if (resp != null)
+            {
+                try
+                {
                     var LastResponse = JsonConvert.DeserializeObject<ExchangeRateJSON>(resp, Globals.JsonSettings);
                     // set that we have a response
-                    if (LastResponse != null) {
+                    if (LastResponse != null)
+                    {
                         Result last_result = LastResponse.result;
                         ActiveDisplayCurrency = ConfigManager.GeneralConfig.DisplayCurrency;
                         exchanges_fiat = last_result.exchanges_fiat;
                         // ActiveDisplayCurrency = "USD";
                         // check if currency avaliable and fill currency list
-                        foreach (var pair in last_result.exchanges) {
-                            if (pair.ContainsKey("USD") && pair.ContainsKey("coin") && pair["coin"] == "BTC" && pair["USD"] != null) {
+                        foreach (var pair in last_result.exchanges)
+                        {
+                            if (pair.ContainsKey("USD") && pair.ContainsKey("coin") && pair["coin"] == "BTC" && pair["USD"] != null)
+                            {
                                 USD_BTC_rate = Helpers.ParseDouble(pair["USD"]);
                                 break;
                             }
                         }
                     }
-                } catch(Exception e) {
+                }
+                catch (Exception e)
+                {
                     Helpers.ConsolePrint("ExchangeRateAPI", "UpdateAPI got Exception: " + e.Message);
                 }
-            } else {
+            }
+            else
+            {
                 Helpers.ConsolePrint("ExchangeRateAPI", "UpdateAPI got NULL");
             }
         }
 
-        private R MakeHttpRequsst<R>(string url)
+        public static AuthDetails Login(string username, string password)
         {
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.Timeout = 30 * 1000;
-            using (WebResponse Response = request.GetResponse())
+            HttpWebRequest request = WebRequest.Create("http://192.168.100.10:8080/api/sign-in") as HttpWebRequest;
+            request.MediaType = "application/json";
+            request.Method = "POST";
+            using (StreamWriter upstream = new StreamWriter(request.GetRequestStream()))
             {
-                Stream responseStream = Response.GetResponseStream();
-                responseStream.ReadTimeout = 20 * 1000;
+                upstream.WriteLine(JsonConvert.SerializeObject(new { username = username, password = password }));
+            }
+            return MakeRequest<AuthDetails>(request);
+        }
+
+        public static R MakeRequest<R>(HttpWebRequest request)
+        {
+            using (WebResponse response = request.GetResponse())
+            {
+                Stream responseStream = response.GetResponseStream();
                 using (StreamReader reader = new StreamReader(responseStream))
                 {
-                    string response = reader.ReadToEnd();
-                    return JsonConvert.DeserializeObject<R>(response);
+                    string content = reader.ReadToEnd();
+                    return JsonConvert.DeserializeObject<R>(content);
                 }
             }
         }
 
-        public MinerSettings FetchMinerSettings()
+        public static R MakePost<R>(string url, object data)
         {
-            return MakeHttpRequsst<MinerSettings>("http://localhost:8080");            
+            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+            request.MediaType = "application/json";
+            request.Method = "POST";
+            using (StreamWriter upstream = new StreamWriter(request.GetRequestStream()))
+            {
+                upstream.WriteLine(JsonConvert.SerializeObject(data));
+            }
+            return MakeRequest<R>(request);
         }
 
+        public static R MakeGet<R>(string url)
+        {
+            return MakeRequest<R>(WebRequest.Create(url) as HttpWebRequest);
+        }
+
+        public static MinerSettings FetchMinerSettings()
+        {
+            return MakeGet<MinerSettings>("http://192.168.100.10:8080/api/monoaddress");
+        }
     }
 }

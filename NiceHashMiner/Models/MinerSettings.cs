@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Newtonsoft.Json;
 
 namespace NiceHashMiner.Configs
 {
-    [Serializable]
     public sealed class MinerSettings
     {
         private readonly string bitcoinAddress;
         public string BitcoinAddress { get; private set; }
 
-        public MinerSettings(string bitcoinAddress)
+        [JsonConstructor]
+        public MinerSettings([JsonProperty("address")] string bitcoinAddress)
         {
             this.bitcoinAddress = bitcoinAddress;
         }
