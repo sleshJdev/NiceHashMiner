@@ -83,7 +83,7 @@ namespace NiceHashMiner.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon stakhavonLogo {
+        internal static System.Drawing.Icon stakhavon {
             get {
                 object obj = ResourceManager.GetObject("logo", resourceCulture);
                 return ((System.Drawing.Icon)(obj));

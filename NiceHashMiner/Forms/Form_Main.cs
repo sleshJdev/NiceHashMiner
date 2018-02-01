@@ -582,7 +582,7 @@ namespace NiceHashMiner
         // Minimize to system tray if MinimizeToTray is set to true
         private void FormMain_Resize(object sender, EventArgs e)
         {
-            notifyIcon1.Icon = NiceHashMiner.Properties.Resources.stakhavonLogo;
+            notifyIcon1.Icon = NiceHashMiner.Properties.Resources.stakhavon;
             notifyIcon1.Text = Application.ProductName + " v" + Application.ProductVersion + "\nDouble-click to restore..";
 
             if (ConfigManager.GeneralConfig.MinimizeToTray && FormWindowState.Minimized == this.WindowState)

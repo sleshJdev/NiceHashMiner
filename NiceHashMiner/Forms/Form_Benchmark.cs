@@ -191,7 +191,7 @@ namespace NiceHashMiner.Forms {
             bool autostart = false) {
             
             InitializeComponent();
-            this.Icon = NiceHashMiner.Properties.Resources.stakhavonLogo;
+            this.Icon = NiceHashMiner.Properties.Resources.stakhavon;
 
             StartMining = false;
 

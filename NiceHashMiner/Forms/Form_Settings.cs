@@ -39,7 +39,7 @@ namespace NiceHashMiner.Forms {
 
         public Form_Settings() {
             InitializeComponent();
-            this.Icon = NiceHashMiner.Properties.Resources.stakhavonLogo;
+            this.Icon = NiceHashMiner.Properties.Resources.stakhavon;
 
             //ret = 1; // default
             IsChange = false;
