@@ -1,8 +1,11 @@
-﻿namespace NiceHashMiner.Models
+﻿using System;
+
+namespace NiceHashMiner.Models
 {
+    [Serializable]
     public sealed class Token
     {
-        public string name { set; get; }
-        public string value { set; get; }
+        public string Name { set; get; }
+        public string Value { set; get; }
     }
 }

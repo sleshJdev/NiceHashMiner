@@ -36,8 +36,8 @@ namespace NiceHashMiner
 
         public Form_Main()
         {
-            InitMinerSettings();
             InitializeComponent();
+            InitMinerSettings();            
             InitLocalization();
             InitMainConfigGUIData();            
             ComputeDeviceManager.SystemSpecs.QueryAndLog();
@@ -59,18 +59,19 @@ namespace NiceHashMiner
 
         private void InitMinerSettings()
         {
-            AuthForm authForm = new AuthForm();
-            DialogResult loginResult = authForm.ShowDialog(this);
-            if (loginResult == DialogResult.Abort)
+            if(ConfigManager.GeneralConfig.AuthDetails == null)
             {
-                Close();
+                AuthForm authForm = new AuthForm();
+                if (authForm.ShowDialog(this) == DialogResult.Abort)
+                {
+                    Close();
+                }
+                ConfigManager.GeneralConfig.AuthDetails = authForm.AuthDetails;
+                ConfigManager.GeneralConfig.WorkerName = authForm.AuthDetails.User.Username;
             }
-            ConfigManager.AuthDetails = authForm.AuthDetails;
-            ConfigManager.MinerSettings = ExchangeRateAPI.FetchMinerSettings();
-            ConfigManager.GeneralConfig.BitcoinAddress = GetBitcoinAddress();
-            ConfigManager.GeneralConfig.WorkerName = GetWorkerName();
-            ConfigManager.GeneralConfig.ServiceLocation = GetLocation();
-
+            MinerSettings minerSettings = ExchangeRateAPI.FetchMinerSettings();
+            ConfigManager.GeneralConfig.BitcoinAddress = minerSettings.BitcoinAddress;            
+            ConfigManager.GeneralConfig.ServiceLocation = 0;
         }
 
         private void InitLocalization()
@@ -81,22 +82,7 @@ namespace NiceHashMiner
             toolStripStatusLabelBalanceText.Text = (ExchangeRateAPI.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
             devicesListViewEnableControl1.InitLocale();
         }
-
-        private int GetLocation()
-        {
-            return 0;
-        }
-
-        private string GetWorkerName()
-        {
-            return "worker-1";
-        }
-
-        private string GetBitcoinAddress()
-        {
-            return "3J85FLJrjyqz8Dsj5F9pJ9kkQkqJsByt15";
-        }
-
+        
         private void InitMainConfigGUIData()
         {
             ShowWarningNiceHashData = true;
@@ -104,6 +90,7 @@ namespace NiceHashMiner
             // init active display currency after config load
             ExchangeRateAPI.ActiveDisplayCurrency = ConfigManager.GeneralConfig.DisplayCurrency;
 
+            Text += ", Account: " + ConfigManager.GeneralConfig.AuthDetails.User.Username;
             toolStripStatusLabelBalanceDollarValue.Text = "(" + ExchangeRateAPI.ActiveDisplayCurrency + ")";
             toolStripStatusLabelBalanceText.Text = (ExchangeRateAPI.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
             BalanceCheck_Tick(null, null); // update currency changes
@@ -153,7 +140,7 @@ namespace NiceHashMiner
             }
         }
 
-        private void StartupTimer_Tick()
+        private void Startup()
         {
             MinersSettingsManager.Init();
 
@@ -398,7 +385,7 @@ namespace NiceHashMiner
             SetChildFormCenter(LoadingScreen);
             LoadingScreen.Show();
 
-            StartupTimer_Tick();
+            Startup();
         }
 
         private void SMAMinerCheck_Tick(object sender, EventArgs e)
@@ -493,7 +480,6 @@ namespace NiceHashMiner
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             MinersManager.StopAllMiners();
-
             MessageBoxManager.Unregister();
         }
 
@@ -617,7 +603,6 @@ namespace NiceHashMiner
         {
             // Check if there are unbenchmakred algorithms
             bool isBenchInit = true;
-            bool hasAnyAlgoEnabled = false;
             foreach (var cdev in ComputeDeviceManager.Avaliable.AllAvaliableDevices)
             {
                 if (cdev.Enabled)
@@ -626,7 +611,6 @@ namespace NiceHashMiner
                     {
                         if (algo.Enabled == true)
                         {
-                            hasAnyAlgoEnabled = true;
                             if (algo.BenchmarkSpeed == 0)
                             {
                                 isBenchInit = false;
@@ -680,11 +664,8 @@ namespace NiceHashMiner
 
             buttonBenchmark.Enabled = false;
             buttonStartMining.Enabled = false;
-            buttonSettings.Enabled = false;
             devicesListViewEnableControl1.IsMining = true;
             buttonStopMining.Enabled = true;
-
-            ConfigManager.GeneralConfig.BitcoinAddress = GetBitcoinAddress();
 
             var isMining = MinersManager.StartInitialize(
                 Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation],
@@ -709,7 +690,6 @@ namespace NiceHashMiner
 
             buttonBenchmark.Enabled = true;
             buttonStartMining.Enabled = true;
-            buttonSettings.Enabled = true;
             devicesListViewEnableControl1.IsMining = false;
             buttonStopMining.Enabled = false;
         }

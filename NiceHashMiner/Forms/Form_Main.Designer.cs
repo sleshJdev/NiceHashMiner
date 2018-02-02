@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.Icon = NiceHashMiner.Properties.Resources.logo;
             this.components = new System.ComponentModel.Container();
             this.buttonStartMining = new System.Windows.Forms.Button();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
@@ -40,7 +39,6 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.buttonStopMining = new System.Windows.Forms.Button();
             this.buttonBenchmark = new System.Windows.Forms.Button();
-            this.buttonSettings = new System.Windows.Forms.Button();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.devicesListViewEnableControl1 = new NiceHashMiner.Forms.Components.DevicesListViewEnableControl();
             this.statusStrip1.SuspendLayout();
@@ -65,9 +63,9 @@
             this.toolStripStatusLabelBalanceDollarText,
             this.toolStripStatusLabelBalanceDollarValue,
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 193);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 195);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(392, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(434, 22);
             this.statusStrip1.TabIndex = 8;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -122,23 +120,13 @@
             // 
             // buttonBenchmark
             // 
-            this.buttonBenchmark.Location = new System.Drawing.Point(202, 12);
+            this.buttonBenchmark.Location = new System.Drawing.Point(333, 12);
             this.buttonBenchmark.Name = "buttonBenchmark";
             this.buttonBenchmark.Size = new System.Drawing.Size(89, 23);
             this.buttonBenchmark.TabIndex = 4;
             this.buttonBenchmark.Text = "&Benchmark";
             this.buttonBenchmark.UseVisualStyleBackColor = true;
             this.buttonBenchmark.Click += new System.EventHandler(this.buttonBenchmark_Click);
-            // 
-            // buttonSettings
-            // 
-            this.buttonSettings.Location = new System.Drawing.Point(297, 12);
-            this.buttonSettings.Name = "buttonSettings";
-            this.buttonSettings.Size = new System.Drawing.Size(89, 23);
-            this.buttonSettings.TabIndex = 5;
-            this.buttonSettings.Text = "S&ettings";
-            this.buttonSettings.UseVisualStyleBackColor = true;
-            this.buttonSettings.Click += new System.EventHandler(this.buttonSettings_Click);
             // 
             // notifyIcon1
             // 
@@ -153,23 +141,25 @@
             this.devicesListViewEnableControl1.Location = new System.Drawing.Point(12, 41);
             this.devicesListViewEnableControl1.Name = "devicesListViewEnableControl1";
             this.devicesListViewEnableControl1.SaveToGeneralConfig = false;
-            this.devicesListViewEnableControl1.Size = new System.Drawing.Size(374, 148);
+            this.devicesListViewEnableControl1.Size = new System.Drawing.Size(410, 148);
             this.devicesListViewEnableControl1.TabIndex = 109;
             // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(392, 215);
+            this.ClientSize = new System.Drawing.Size(434, 217);
             this.Controls.Add(this.devicesListViewEnableControl1);
-            this.Controls.Add(this.buttonSettings);
             this.Controls.Add(this.buttonBenchmark);
             this.Controls.Add(this.buttonStopMining);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.buttonStartMining);
             this.Enabled = false;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = global::NiceHashMiner.Properties.Resources.logo;
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(450, 255);
+            this.MinimumSize = new System.Drawing.Size(450, 255);
             this.Name = "Form_Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Stakhanov";
@@ -194,7 +184,6 @@
         private System.Windows.Forms.Button buttonBenchmark;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelBalanceDollarText;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelBalanceDollarValue;
-        private System.Windows.Forms.Button buttonSettings;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private Forms.Components.DevicesListViewEnableControl devicesListViewEnableControl1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;

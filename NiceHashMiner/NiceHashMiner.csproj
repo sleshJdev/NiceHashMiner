@@ -104,7 +104,7 @@
     <Compile Include="Configs\ConfigManager.cs" />
     <Compile Include="Configs\Data\AlgorithmConfig.cs" />
     <Compile Include="Configs\Data\DeviceBenchmarkConfig.cs" />
-    <Compile Include="Configs\ConfigJsonFile\ConfigFile.cs" />
+    <Compile Include="Configs\ConfigJsonFile\AbstractConfigFile.cs" />
     <Compile Include="Configs\Data\ComputeDeviceConfig.cs" />
     <Compile Include="Configs\Data\GeneralConfig.cs" />
     <Compile Include="Configs\Data\BenchmarkTimeLimitsConfig.cs" />

@@ -10,14 +10,14 @@ using System.Text;
 namespace NiceHashMiner.Miners {
     public static class MinersSettingsManager {
 
-        class MinerReservedPortsFile : ConfigFile<Dictionary<MinerBaseType, Dictionary<string, Dictionary<AlgorithmType, List<int>>>>> {
+        class MinerReservedPortsFile : AbstractConfigFile<Dictionary<MinerBaseType, Dictionary<string, Dictionary<AlgorithmType, List<int>>>>> {
             public MinerReservedPortsFile()
                 : base(FOLDERS.CONFIG, "MinerReservedPorts.json", "MinerReservedPorts_old.json") {
             }
         }
 
         // {miner path : {envName : envValue} }
-        class MinerSystemVariablesFile : ConfigFile<Dictionary<string, Dictionary<string, string>>> {
+        class MinerSystemVariablesFile : AbstractConfigFile<Dictionary<string, Dictionary<string, string>>> {
             public MinerSystemVariablesFile() : base(FOLDERS.CONFIG, "MinerSystemVariables.json", "MinerSystemVariables_old.json") {}
         }
 

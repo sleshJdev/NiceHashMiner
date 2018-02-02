@@ -1,7 +1,10 @@
-﻿namespace NiceHashMiner.Models
+﻿using System;
+
+namespace NiceHashMiner.Models
 {
+    [Serializable]
     public sealed class User
     {
-        public string username { set; get; }
+        public string Username { set; get; }
     }
 }

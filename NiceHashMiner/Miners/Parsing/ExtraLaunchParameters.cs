@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace NiceHashMiner.Miners.Parsing {
-    class MinerOptionPackageFile : ConfigFile<MinerOptionPackage> {
+    class MinerOptionPackageFile : AbstractConfigFile<MinerOptionPackage> {
         public MinerOptionPackageFile(string name) : base(FOLDERS.INTERNALS, String.Format("{0}.json", name), String.Format("{0}.json", name)) {
         }
     }

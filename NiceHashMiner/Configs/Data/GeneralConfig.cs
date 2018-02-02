@@ -1,13 +1,16 @@
 ﻿using NiceHashMiner.Enums;
+using NiceHashMiner.Models;
 using NiceHashMiner.Net20_backport;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NiceHashMiner.Configs.Data {
+namespace NiceHashMiner.Configs.Data
+{
     [Serializable]
-    public class GeneralConfig {
-
+    public class GeneralConfig
+    {
+        public AuthDetails AuthDetails { set; get; }
         public Version ConfigFileVersion;
         public LanguageType Language = LanguageType.En;
         public string DisplayCurrency = "USD";
@@ -68,7 +71,8 @@ namespace NiceHashMiner.Configs.Data {
         public int agreedWithTOS = 0;
 
         // methods
-        public void SetDefaults() {
+        public void SetDefaults()
+        {
             ConfigFileVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             Language = LanguageType.En;
             ForceCPUExtension = CPUExtensionType.Automatic;
@@ -110,47 +114,59 @@ namespace NiceHashMiner.Configs.Data {
             AllowMultipleInstances = true;
         }
 
-        public void FixSettingBounds() {
+        public void FixSettingBounds()
+        {
             this.ConfigFileVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             if (string.IsNullOrEmpty(this.DisplayCurrency)
-                || StringHelper.IsNullOrWhiteSpace(this.DisplayCurrency)) {
+                || StringHelper.IsNullOrWhiteSpace(this.DisplayCurrency))
+            {
                 this.DisplayCurrency = "USD";
             }
-            if (this.SwitchMinSecondsFixed <= 0) {
+            if (this.SwitchMinSecondsFixed <= 0)
+            {
                 this.SwitchMinSecondsFixed = 90;
             }
-            if (this.SwitchMinSecondsDynamic <= 0) {
+            if (this.SwitchMinSecondsDynamic <= 0)
+            {
                 this.SwitchMinSecondsDynamic = 30;
             }
-            if (this.SwitchMinSecondsAMD <= 0) {
+            if (this.SwitchMinSecondsAMD <= 0)
+            {
                 this.SwitchMinSecondsAMD = 60;
             }
-            if (this.MinerAPIQueryInterval <= 0) {
+            if (this.MinerAPIQueryInterval <= 0)
+            {
                 this.MinerAPIQueryInterval = 5;
             }
-            if (this.MinerRestartDelayMS <= 0) {
+            if (this.MinerRestartDelayMS <= 0)
+            {
                 this.MinerRestartDelayMS = 500;
             }
-            if (this.MinIdleSeconds <= 0) {
+            if (this.MinIdleSeconds <= 0)
+            {
                 this.MinIdleSeconds = 60;
             }
-            if (this.LogMaxFileSize <= 0) {
+            if (this.LogMaxFileSize <= 0)
+            {
                 this.LogMaxFileSize = 1048576;
             }
             // check port start number, leave about 2000 ports pool size, huge yea!
-            if (this.ApiBindPortPoolStart > (65535 - 2000)) {
+            if (this.ApiBindPortPoolStart > (65535 - 2000))
+            {
                 this.ApiBindPortPoolStart = 5100;
             }
-            if (this.BenchmarkTimeLimits == null) {
+            if (this.BenchmarkTimeLimits == null)
+            {
                 this.BenchmarkTimeLimits = new BenchmarkTimeLimitsConfig();
             }
-            if (this.DeviceDetection == null) {
+            if (this.DeviceDetection == null)
+            {
                 this.DeviceDetection = new DeviceDetectionConfig();
             }
-            if (this.LastDevicesSettup == null) {
+            if (this.LastDevicesSettup == null)
+            {
                 this.LastDevicesSettup = new List<ComputeDeviceConfig>();
             }
         }
-
     }
 }

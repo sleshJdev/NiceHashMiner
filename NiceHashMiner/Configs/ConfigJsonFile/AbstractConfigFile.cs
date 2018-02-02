@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 
 namespace NiceHashMiner.Configs.ConfigJsonFile {
-    public abstract class ConfigFile<T> where T : class {
+    public abstract class AbstractConfigFile<T> where T : class {
         // statics/consts
         const string TAG_FORMAT = "ConfigFile<{0}>";
         private readonly string CONF_FOLDER; // = @"configs\";
@@ -23,7 +23,7 @@ namespace NiceHashMiner.Configs.ConfigJsonFile {
         protected string _filePath = "";
         protected string _filePathOld = "";
 
-        public ConfigFile(string iCONF_FOLDER, string fileName, string fileNameOld) {
+        public AbstractConfigFile(string iCONF_FOLDER, string fileName, string fileNameOld) {
             CONF_FOLDER = iCONF_FOLDER;
             if(fileName.Contains(CONF_FOLDER)) {
                 this._filePath = fileName;

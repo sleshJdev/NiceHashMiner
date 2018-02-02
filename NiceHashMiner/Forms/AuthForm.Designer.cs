@@ -108,7 +108,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(329, 181);
+            this.ClientSize = new System.Drawing.Size(329, 182);
             this.Controls.Add(this.labelInfo);
             this.Controls.Add(this.groupBoxCredentials);
             this.Controls.Add(this.buttonLogin);
@@ -116,6 +116,7 @@
             this.MaximumSize = new System.Drawing.Size(345, 220);
             this.MinimumSize = new System.Drawing.Size(345, 220);
             this.Name = "AuthForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Authentication";
             this.groupBoxCredentials.ResumeLayout(false);
             this.groupBoxCredentials.PerformLayout();

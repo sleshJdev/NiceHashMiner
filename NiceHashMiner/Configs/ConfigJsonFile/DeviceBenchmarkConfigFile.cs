@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace NiceHashMiner.Configs.ConfigJsonFile {
-    public class DeviceBenchmarkConfigFile : ConfigFile<DeviceBenchmarkConfig> {
+    public class DeviceBenchmarkConfigFile : AbstractConfigFile<DeviceBenchmarkConfig> {
         const string BENCHMARK_PREFIX = "benchmark_";
 
         private static string GetName(string DeviceUUID, string old = "") {
