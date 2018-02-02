@@ -13,8 +13,6 @@ namespace NiceHashMiner
 {
     class Helpers : PInvokeHelpers
     {
-        
-
         static bool is64BitProcess = (IntPtr.Size == 8);
         static bool is64BitOperatingSystem = is64BitProcess || InternalCheckIsWow64();
 

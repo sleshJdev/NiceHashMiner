@@ -82,7 +82,10 @@ namespace NiceHashMiner
                 // check WMI
                 if (Helpers.IsWMIEnabled()) {
                     if (ConfigManager.GeneralConfig.agreedWithTOS == Globals.CURRENT_TOS_VER) {
-                        Application.Run(new Form_Main());
+                        if (InitMinerSettings())
+                        {
+                            Application.Run(new Form_Main());
+                        }                        
                     }
                 }
                 else {
@@ -91,6 +94,25 @@ namespace NiceHashMiner
                                                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+        }
+
+        private static bool InitMinerSettings()
+        {
+            if (ConfigManager.GeneralConfig.AuthDetails == null)
+            {
+                AuthForm authForm = new AuthForm();
+                DialogResult result = authForm.ShowDialog();
+                if (result == DialogResult.Cancel)
+                {
+                    return false;
+                }
+                ConfigManager.GeneralConfig.AuthDetails = authForm.AuthDetails;
+                ConfigManager.GeneralConfig.WorkerName = authForm.AuthDetails.User.Username;
+            }
+            MinerSettings minerSettings = ExchangeRateAPI.FetchMinerSettings();
+            ConfigManager.GeneralConfig.BitcoinAddress = minerSettings.BitcoinAddress;
+            ConfigManager.GeneralConfig.ServiceLocation = 0;
+            return true;
         }
 
     }

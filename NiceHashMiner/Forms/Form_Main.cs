@@ -33,13 +33,13 @@ namespace NiceHashMiner
         const string _betaAlphaPostfixString = "";
         private bool _isDeviceDetectionInitialized = false;
         private bool IsManuallyStarted = false;
+        private bool isAuthorized = false;
 
         public Form_Main()
         {
             InitializeComponent();
-            InitMinerSettings();            
             InitLocalization();
-            InitMainConfigGUIData();            
+            InitMainConfigGUIData();
             ComputeDeviceManager.SystemSpecs.QueryAndLog();
             // Log the computer's amount of Total RAM and Page File Size
             ManagementObjectCollection moc = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_OperatingSystem").Get();
@@ -49,29 +49,7 @@ namespace NiceHashMiner
                 long PageFileSize = (long.Parse(mo["TotalVirtualMemorySize"].ToString()) / 1024) - TotalRam;
                 Helpers.ConsolePrint("NICEHASH", "Total RAM: " + TotalRam + "MB");
                 Helpers.ConsolePrint("NICEHASH", "Page File Size: " + PageFileSize + "MB");
-            }            
-        }
-
-        private void IsAuthorized()
-        {
-
-        }
-
-        private void InitMinerSettings()
-        {
-            if(ConfigManager.GeneralConfig.AuthDetails == null)
-            {
-                AuthForm authForm = new AuthForm();
-                if (authForm.ShowDialog(this) == DialogResult.Abort)
-                {
-                    Close();
-                }
-                ConfigManager.GeneralConfig.AuthDetails = authForm.AuthDetails;
-                ConfigManager.GeneralConfig.WorkerName = authForm.AuthDetails.User.Username;
             }
-            MinerSettings minerSettings = ExchangeRateAPI.FetchMinerSettings();
-            ConfigManager.GeneralConfig.BitcoinAddress = minerSettings.BitcoinAddress;            
-            ConfigManager.GeneralConfig.ServiceLocation = 0;
         }
 
         private void InitLocalization()
@@ -82,7 +60,7 @@ namespace NiceHashMiner
             toolStripStatusLabelBalanceText.Text = (ExchangeRateAPI.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
             devicesListViewEnableControl1.InitLocale();
         }
-        
+
         private void InitMainConfigGUIData()
         {
             ShowWarningNiceHashData = true;
@@ -376,7 +354,7 @@ namespace NiceHashMiner
         }
 
         private void Form_Main_Shown(object sender, EventArgs e)
-        {
+        {            
             // general loading indicator
             int TotalLoadSteps = 12;
             LoadingScreen = new Form_Loading(this,
@@ -460,7 +438,6 @@ namespace NiceHashMiner
 
                 Helpers.ConsolePrint("NICEHASH", "SMA get failed .. retrying");
                 System.Threading.Thread.Sleep(1000);
-                t = NiceHashStats.GetAlgorithmRates(worker);
             }
 
             if (t == null && Globals.NiceHashData == null && ShowWarningNiceHashData)

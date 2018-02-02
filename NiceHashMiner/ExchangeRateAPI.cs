@@ -111,7 +111,7 @@ namespace NiceHashMiner
             }
         }
 
-        static string host = "http://localhost:4200";
+        static string host = "http://localhost:8080";
         public static AuthDetails Login(string username, string password)
         {
             HttpWebRequest request = WebRequest.Create(host + "/api/sign-in") as HttpWebRequest;            
@@ -161,8 +161,7 @@ namespace NiceHashMiner
 
         public static MinerSettings FetchMinerSettings()
         {
-            MinerSettings minerSettings = MakeGet<MinerSettings>(host + "/api/wallet");
-            return minerSettings;
+            return MakeGet<MinerSettings>(host + "/api/wallet");
         }
     }
 }
