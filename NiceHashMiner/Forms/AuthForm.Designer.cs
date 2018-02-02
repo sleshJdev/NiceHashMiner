@@ -28,19 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.Icon = NiceHashMiner.Properties.Resources.logo;
             this.buttonLogin = new System.Windows.Forms.Button();
             this.textBoxUserName = new System.Windows.Forms.TextBox();
             this.labelName = new System.Windows.Forms.Label();
             this.labelPassword = new System.Windows.Forms.Label();
             this.textBoxPassword = new System.Windows.Forms.TextBox();
             this.groupBoxCredentials = new System.Windows.Forms.GroupBox();
+            this.labelInfo = new System.Windows.Forms.Label();
             this.groupBoxCredentials.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonLogin
             // 
-            this.buttonLogin.Location = new System.Drawing.Point(131, 93);
+            this.buttonLogin.Location = new System.Drawing.Point(236, 146);
             this.buttonLogin.Name = "buttonLogin";
             this.buttonLogin.Size = new System.Drawing.Size(81, 23);
             this.buttonLogin.TabIndex = 0;
@@ -52,7 +52,7 @@
             // 
             this.textBoxUserName.Location = new System.Drawing.Point(94, 19);
             this.textBoxUserName.Name = "textBoxUserName";
-            this.textBoxUserName.Size = new System.Drawing.Size(100, 20);
+            this.textBoxUserName.Size = new System.Drawing.Size(205, 20);
             this.textBoxUserName.TabIndex = 1;
             // 
             // labelName
@@ -77,7 +77,7 @@
             // 
             this.textBoxPassword.Location = new System.Drawing.Point(94, 45);
             this.textBoxPassword.Name = "textBoxPassword";
-            this.textBoxPassword.Size = new System.Drawing.Size(100, 20);
+            this.textBoxPassword.Size = new System.Drawing.Size(205, 20);
             this.textBoxPassword.TabIndex = 3;
             // 
             // groupBoxCredentials
@@ -86,27 +86,41 @@
             this.groupBoxCredentials.Controls.Add(this.labelPassword);
             this.groupBoxCredentials.Controls.Add(this.labelName);
             this.groupBoxCredentials.Controls.Add(this.textBoxPassword);
-            this.groupBoxCredentials.Location = new System.Drawing.Point(12, 12);
+            this.groupBoxCredentials.Location = new System.Drawing.Point(12, 65);
             this.groupBoxCredentials.Name = "groupBoxCredentials";
-            this.groupBoxCredentials.Size = new System.Drawing.Size(200, 75);
+            this.groupBoxCredentials.Size = new System.Drawing.Size(305, 75);
             this.groupBoxCredentials.TabIndex = 5;
             this.groupBoxCredentials.TabStop = false;
             this.groupBoxCredentials.Text = "Credentials";
+            // 
+            // labelInfo
+            // 
+            this.labelInfo.AutoSize = true;
+            this.labelInfo.Location = new System.Drawing.Point(12, 9);
+            this.labelInfo.Name = "labelInfo";
+            this.labelInfo.Size = new System.Drawing.Size(276, 52);
+            this.labelInfo.TabIndex = 6;
+            this.labelInfo.Text = "Please, log in before working with the miner,\r\nIt\'s need to track your profit and" +
+    " keep alive a session.\r\n\r\nPlease, use credentials of your \'stakhanov.com\' accoun" +
+    "t.";
             // 
             // AuthForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(229, 127);
+            this.ClientSize = new System.Drawing.Size(329, 181);
+            this.Controls.Add(this.labelInfo);
             this.Controls.Add(this.groupBoxCredentials);
             this.Controls.Add(this.buttonLogin);
-            this.MaximumSize = new System.Drawing.Size(245, 165);
-            this.MinimumSize = new System.Drawing.Size(245, 165);
+            this.Icon = global::NiceHashMiner.Properties.Resources.logo;
+            this.MaximumSize = new System.Drawing.Size(345, 220);
+            this.MinimumSize = new System.Drawing.Size(345, 220);
             this.Name = "AuthForm";
             this.Text = "Authentication";
             this.groupBoxCredentials.ResumeLayout(false);
             this.groupBoxCredentials.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -118,5 +132,6 @@
         private System.Windows.Forms.Label labelPassword;
         private System.Windows.Forms.TextBox textBoxPassword;
         private System.Windows.Forms.GroupBox groupBoxCredentials;
+        private System.Windows.Forms.Label labelInfo;
     }
 }

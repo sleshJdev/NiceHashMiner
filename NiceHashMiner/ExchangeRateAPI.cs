@@ -111,11 +111,11 @@ namespace NiceHashMiner
             }
         }
 
-        static string host = "http://127.0.0.1:8080";
+        static string host = "http://127.0.0.1:4200";
         public static AuthDetails Login(string username, string password)
         {
-            HttpWebRequest request = WebRequest.Create(host + "/api/sign-in") as HttpWebRequest;
-            request.MediaType = "application/json";
+            HttpWebRequest request = WebRequest.Create(host + "/api/sign-in") as HttpWebRequest;            
+            request.ContentType = "application/json";
             request.Method = "POST";
             using (StreamWriter upstream = new StreamWriter(request.GetRequestStream()))
             {
@@ -140,7 +140,8 @@ namespace NiceHashMiner
         public static R MakePost<R>(string url, object data)
         {
             HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.MediaType = "application/json";
+            request.Headers[ConfigManager.AuthDetails.token.name] = ConfigManager.AuthDetails.token.value;
+            request.ContentType = "application/json";
             request.Method = "POST";
             using (StreamWriter upstream = new StreamWriter(request.GetRequestStream()))
             {
@@ -151,12 +152,14 @@ namespace NiceHashMiner
 
         public static R MakeGet<R>(string url)
         {
-            return MakeRequest<R>(WebRequest.Create(url) as HttpWebRequest);
+            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+            request.Headers[ConfigManager.AuthDetails.token.name] = ConfigManager.AuthDetails.token.value;
+            return MakeRequest<R>(request);
         }
 
         public static MinerSettings FetchMinerSettings()
         {
-            return MakeGet<MinerSettings>(host + "/api/monoaddress");
+            return MakeGet<MinerSettings>(host + "/api/wallet");
         }
     }
 }

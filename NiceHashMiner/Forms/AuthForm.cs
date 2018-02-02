@@ -11,6 +11,9 @@ namespace NiceHashMiner.Forms
 {
     public partial class AuthForm : Form
     {
+
+        public AuthDetails AuthDetails { set; get; }
+
         public AuthForm()
         {
             InitializeComponent();
@@ -22,14 +25,14 @@ namespace NiceHashMiner.Forms
             string password = textBoxPassword.Text.Trim();
             try
             {
-                AuthDetails authDetails = ExchangeRateAPI.Login(username, password);
+                AuthDetails = ExchangeRateAPI.Login(username, password);
                 DialogResult = DialogResult.OK;
+                Close();
             }
             catch (Exception ex)
             {
-                DialogResult = DialogResult.Abort;
+                MessageBox.Show(this, "Username/password is wrong.", "Authorization failed", MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
-
         }
     }
 }

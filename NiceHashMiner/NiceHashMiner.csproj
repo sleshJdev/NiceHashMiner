@@ -91,6 +91,7 @@
     </Compile>
     <Compile Include="Miners\ClaymoreDual.cs" />
     <Compile Include="Models\AuthDetails.cs" />
+    <Compile Include="Models\Request.cs" />
     <Compile Include="Models\Token.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

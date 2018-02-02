@@ -10,8 +10,6 @@ using NiceHashMiner.Devices;
 using NiceHashMiner.Enums;
 using NiceHashMiner.Forms;
 using NiceHashMiner.Miners;
-using NiceHashMiner.Interfaces;
-using NiceHashMiner.Forms.Components;
 using NiceHashMiner.Utils;
 
 using SystemTimer = System.Timers.Timer;
@@ -61,8 +59,14 @@ namespace NiceHashMiner
 
         private void InitMinerSettings()
         {
-            DialogResult loginResult = new AuthForm().ShowDialog(this);
-            MinerSettings minerSettings = ExchangeRateAPI.FetchMinerSettings();
+            AuthForm authForm = new AuthForm();
+            DialogResult loginResult = authForm.ShowDialog(this);
+            if (loginResult == DialogResult.Abort)
+            {
+                Close();
+            }
+            ConfigManager.AuthDetails = authForm.AuthDetails;
+            ConfigManager.MinerSettings = ExchangeRateAPI.FetchMinerSettings();
             ConfigManager.GeneralConfig.BitcoinAddress = GetBitcoinAddress();
             ConfigManager.GeneralConfig.WorkerName = GetWorkerName();
             ConfigManager.GeneralConfig.ServiceLocation = GetLocation();
@@ -708,16 +712,6 @@ namespace NiceHashMiner
             buttonSettings.Enabled = true;
             devicesListViewEnableControl1.IsMining = false;
             buttonStopMining.Enabled = false;
-        }
-
-        public void ShowNotProfitable(string msg)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void HideNotProfitable()
-        {
-            throw new NotImplementedException();
         }
     }
 }

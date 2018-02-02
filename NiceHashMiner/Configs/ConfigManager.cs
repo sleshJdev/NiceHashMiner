@@ -2,12 +2,15 @@
 using NiceHashMiner.Configs.Data;
 using NiceHashMiner.Devices;
 using NiceHashMiner.Enums;
+using NiceHashMiner.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace NiceHashMiner.Configs {
     public static class ConfigManager {
+        public static MinerSettings MinerSettings { set; get; }
+        public static AuthDetails AuthDetails { set; get; }
         private static readonly string TAG = "ConfigManager";
         public static GeneralConfig GeneralConfig = new GeneralConfig();
 
