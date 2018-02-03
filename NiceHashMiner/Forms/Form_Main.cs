@@ -21,9 +21,9 @@ namespace NiceHashMiner
     {
         private static string VisitURL = Links.VisitURL;
         private Timer MinerStatsCheck;
-        private SystemTimer SMACheck;
+        private SystemTimer UpdateAlgorithmsProfitabilityTimer;
         private Timer BalanceCheck;
-        private Timer SMAMinerCheck;
+        private Timer SwitchMostProfitableAlgorithmTimer;
         private Timer BitcoinExchangeCheck;
         private Timer IdleCheck;
         private bool ShowWarningNiceHashData;
@@ -163,20 +163,19 @@ namespace NiceHashMiner
             MinerStatsCheck.Tick += MinerStatsCheck_Tick;
             MinerStatsCheck.Interval = ConfigManager.GeneralConfig.MinerAPIQueryInterval * 1000;
 
-            SMAMinerCheck = new Timer();
-            SMAMinerCheck.Tick += SMAMinerCheck_Tick;
-            SMAMinerCheck.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
-            {
-                SMAMinerCheck.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            }
+            SwitchMostProfitableAlgorithmTimer = new Timer();
+            SwitchMostProfitableAlgorithmTimer.Tick += SwitchMostProfitableAlgorithm;
+            SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            //if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
+            //{
+            //    SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            //}
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_GetNiceHashSMA"));
-
-            SMACheck = new SystemTimer();
-            SMACheck.Elapsed += SMACheck_Tick;
-            SMACheck.Interval = 60 * 1000 * 2; // every 2 minutes
-            SMACheck.Start();
+            UpdateAlgorithmsProfitabilityTimer = new SystemTimer();
+            UpdateAlgorithmsProfitabilityTimer.Elapsed += UpdateAlgorithmsProfitabilityData;
+            UpdateAlgorithmsProfitabilityTimer.Interval = 60 * 1000 * 2; // every 2 minutes
+            //UpdateAlgorithmsProfitabilityTimer.Start();
 
             // increase timeout
             if (Globals.IsFirstNetworkCheckTimeout)
@@ -187,7 +186,7 @@ namespace NiceHashMiner
                 }
             }
 
-            SMACheck_Tick(null, null);
+            UpdateAlgorithmsProfitabilityData(null, null);
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_GetBTCRate"));
 
@@ -366,18 +365,19 @@ namespace NiceHashMiner
             Startup();
         }
 
-        private void SMAMinerCheck_Tick(object sender, EventArgs e)
+        private void SwitchMostProfitableAlgorithm(object sender, EventArgs e)
         {
-            SMAMinerCheck.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            double interval = SwitchMostProfitableAlgorithmTimer.Interval;
+            SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
             {
-                SMAMinerCheck.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+                SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             }
 
 #if (SWITCH_TESTING)
             SMAMinerCheck.Interval = MiningDevice.SMAMinerCheckInterval;
 #endif
-            MinersManager.SwichMostProfitableGroupUpMethod(Globals.NiceHashData);
+            MinersManager.SwichMostProfitableGroupUpMethod(Globals.NiceHashData, interval);
         }
 
 
@@ -389,7 +389,7 @@ namespace NiceHashMiner
         void BalanceCheck_Tick(object sender, EventArgs e)
         {
             Helpers.ConsolePrint("NICEHASH", "Balance get");
-            double Balance = NiceHashStats.GetBalance(ConfigManager.GeneralConfig.BitcoinAddress, ConfigManager.GeneralConfig.BitcoinAddress + "." + ConfigManager.GeneralConfig.WorkerName);
+            double Balance = NiceHashStats.GetBalance(ConfigManager.MinerSettings.BitcoinAddress, ConfigManager.MinerSettings.BitcoinAddress + "." + ConfigManager.GeneralConfig.AuthDetails.User.Username);
             if (Balance > 0)
             {
                 if (ConfigManager.GeneralConfig.AutoScaleBTCValues && Balance < 0.1)
@@ -414,16 +414,16 @@ namespace NiceHashMiner
         void BitcoinExchangeCheck_Tick(object sender, EventArgs e)
         {
             Helpers.ConsolePrint("NICEHASH", "Bitcoin rate get");
-            ExchangeRateAPI.UpdateAPI(ConfigManager.GeneralConfig.WorkerName);
+            ExchangeRateAPI.UpdateAPI(ConfigManager.GeneralConfig.AuthDetails.User.Username);
             double BR = ExchangeRateAPI.GetUSDExchangeRate();
             if (BR > 0) Globals.BitcoinUSDRate = BR;
             Helpers.ConsolePrint("NICEHASH", "Current Bitcoin rate: " + Globals.BitcoinUSDRate.ToString("F2", CultureInfo.InvariantCulture));
         }
 
 
-        void SMACheck_Tick(object sender, EventArgs e)
+        void UpdateAlgorithmsProfitabilityData(object sender, EventArgs e)
         {
-            string worker = ConfigManager.GeneralConfig.BitcoinAddress + "." + ConfigManager.GeneralConfig.WorkerName;
+            string worker = ConfigManager.MinerSettings.BitcoinAddress + "." + ConfigManager.GeneralConfig.AuthDetails.User.Username;
             Helpers.ConsolePrint("NICEHASH", "SMA get");
             Dictionary<AlgorithmType, NiceHashSMA> t = null;
 
@@ -646,13 +646,14 @@ namespace NiceHashMiner
 
             var isMining = MinersManager.StartInitialize(
                 Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation],
-                ConfigManager.GeneralConfig.WorkerName,
-                ConfigManager.GeneralConfig.BitcoinAddress);
+                ConfigManager.GeneralConfig.AuthDetails.User.Username,
+                ConfigManager.MinerSettings.BitcoinAddress);
 
             ConfigManager.GeneralConfigFileCommit();
 
-            SMAMinerCheck.Interval = 100;
-            SMAMinerCheck.Start();
+            //SwitchMostProfitableAlgorithmTimer.Interval = 100;
+            //SwitchMostProfitableAlgorithmTimer.Start();
+            SwitchMostProfitableAlgorithm(null, null);
             MinerStatsCheck.Start();
 
             return isMining ? StartMiningReturnType.StartMining : StartMiningReturnType.ShowNoMining;
@@ -661,7 +662,7 @@ namespace NiceHashMiner
         private void StopMining()
         {
             MinerStatsCheck.Stop();
-            SMAMinerCheck.Stop();
+            SwitchMostProfitableAlgorithmTimer.Stop();
 
             MinersManager.StopAllMiners();
 

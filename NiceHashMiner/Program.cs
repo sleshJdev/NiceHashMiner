@@ -107,10 +107,8 @@ namespace NiceHashMiner
                     return false;
                 }
                 ConfigManager.GeneralConfig.AuthDetails = authForm.AuthDetails;
-                ConfigManager.GeneralConfig.WorkerName = authForm.AuthDetails.User.Username;
             }
-            MinerSettings minerSettings = ExchangeRateAPI.FetchMinerSettings();
-            ConfigManager.GeneralConfig.BitcoinAddress = minerSettings.BitcoinAddress;
+            ConfigManager.MinerSettings = ExchangeRateAPI.FetchMinerSettings();
             ConfigManager.GeneralConfig.ServiceLocation = 0;
             return true;
         }

@@ -16,8 +16,6 @@ namespace NiceHashMiner.Configs.Data
         public string DisplayCurrency = "USD";
 
         public bool DebugConsole = false;
-        public string BitcoinAddress = "";
-        public string WorkerName = "worker1";
         public int ServiceLocation = 0;
         public bool AutoStartMining = false;
         public bool HideMiningWindows = false;
@@ -76,8 +74,6 @@ namespace NiceHashMiner.Configs.Data
             ConfigFileVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             Language = LanguageType.En;
             ForceCPUExtension = CPUExtensionType.Automatic;
-            BitcoinAddress = "";
-            WorkerName = "worker1";
             ServiceLocation = 0;
             AutoStartMining = false;
             //LessThreads = 0;

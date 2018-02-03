@@ -53,8 +53,8 @@ namespace NiceHashMiner.Miners {
         /// Calculate profit for each supported algorithm per device and group.
         /// </summary>
         /// <param name="NiceHashData"></param>
-        public static void SwichMostProfitableGroupUpMethod(Dictionary<AlgorithmType, NiceHashSMA> NiceHashData) {
-            if (CurMiningSession != null) CurMiningSession.SwichMostProfitableGroupUpMethod(NiceHashData);
+        public static void SwichMostProfitableGroupUpMethod(Dictionary<AlgorithmType, NiceHashSMA> NiceHashData, double interval) {
+            if (CurMiningSession != null) CurMiningSession.SwichMostProfitableGroupUpMethod(NiceHashData, interval);
         }
 
         public static void MinerStatsCheck(Dictionary<AlgorithmType, NiceHashSMA> NiceHashData) {

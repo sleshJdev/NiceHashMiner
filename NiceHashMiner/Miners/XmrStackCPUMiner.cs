@@ -287,7 +287,7 @@ namespace NiceHashMiner.Miners {
         // doesn't work stubs
         protected override string BenchmarkCreateCommandLine(Algorithm algorithm, int time) {
             string url = Globals.GetLocationURL(algorithm.NiceHashID, Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation], this.ConectionType);
-            prepareConfigFile(url, ConfigManager.GeneralConfig.BitcoinAddress);
+            prepareConfigFile(url, ConfigManager.MinerSettings.BitcoinAddress);
             return "benchmark_mode " + GetConfigFileName();
         }
 

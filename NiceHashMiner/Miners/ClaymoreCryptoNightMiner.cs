@@ -38,10 +38,7 @@ namespace NiceHashMiner.Miners {
 
             // network workaround
             string url = Globals.GetLocationURL(algorithm.NiceHashID, Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation], this.ConectionType);
-            string username = ConfigManager.GeneralConfig.BitcoinAddress;
-            if (ConfigManager.GeneralConfig.WorkerName.Length > 0)
-                username += "." + ConfigManager.GeneralConfig.WorkerName.Trim();
-   
+            string username = ConfigManager.MinerSettings.BitcoinAddress + "." + ConfigManager.GeneralConfig.AuthDetails.User.Username;   
             string ret = " " + GetDevicesCommandString() +  
                 " -mport -" + APIPort + 
                 " -o " + url + 

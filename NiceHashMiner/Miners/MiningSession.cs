@@ -249,7 +249,7 @@ namespace NiceHashMiner.Miners
             return shouldMine;
         }
 
-        public void SwichMostProfitableGroupUpMethod(Dictionary<AlgorithmType, NiceHashSMA> NiceHashData, bool log = true)
+        public void SwichMostProfitableGroupUpMethod(Dictionary<AlgorithmType, NiceHashSMA> NiceHashData, double interval, bool log = true)
         {
 #if (SWITCH_TESTING)
             MiningDevice.SetNextTest();
@@ -259,14 +259,21 @@ namespace NiceHashMiner.Miners
             double PrevStateProfit = 0.0d;
             foreach (var device in _miningDevices)
             {
+                MiningPair mp = device.GetMostProfitablePair();
+
+                //save current algorithm name and profit before update
+                string algorithmName = mp.Algorithm.AlgorithmName;
+                double profit = mp.Algorithm.CurrentProfit;
+                ExchangeRateAPI.SaveAlgorithmProfit(algorithmName, profit, interval);
+
                 // calculate profits
                 device.CalculateProfits(NiceHashData);
                 // check if device has profitable algo
                 if (device.HasProfitableAlgo())
-                {
-                    profitableDevices.Add(device.GetMostProfitablePair());
+                {                    
+                    profitableDevices.Add(mp);
                     CurrentProfit += device.GetCurrentMostProfitValue;
-                    PrevStateProfit += device.GetPrevMostProfitValue;
+                    PrevStateProfit += device.GetPrevMostProfitValue;                    
                 }
             }
 

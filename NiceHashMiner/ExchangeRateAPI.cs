@@ -139,9 +139,7 @@ namespace NiceHashMiner
 
         public static R MakePost<R>(string url, object data)
         {
-            Token token = ConfigManager.GeneralConfig.AuthDetails.Token;
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            request.Headers[token.Name] = token.Value;
+            HttpWebRequest request = CreateRequest(url);
             request.ContentType = "application/json";
             request.Method = "POST";
             using (StreamWriter upstream = new StreamWriter(request.GetRequestStream()))
@@ -153,15 +151,31 @@ namespace NiceHashMiner
 
         public static R MakeGet<R>(string url)
         {
+            HttpWebRequest request = CreateRequest(url);
+            return MakeRequest<R>(request);
+        }
+
+        private static HttpWebRequest CreateRequest(string url)
+        {
             Token token = ConfigManager.GeneralConfig.AuthDetails.Token;
             HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
             request.Headers[token.Name] = token.Value;
-            return MakeRequest<R>(request);
+            return request;
         }
+
 
         public static MinerSettings FetchMinerSettings()
         {
             return MakeGet<MinerSettings>(host + "/api/wallet");
+        }
+
+        public static void SaveAlgorithmProfit(string algorithmName, double profit, double interval)
+        {
+            MakePost<string>(host + "/api/profit", new {
+                miningInterval = interval,
+                algorithmType = algorithmName,
+                profit = profit
+            });
         }
     }
 }

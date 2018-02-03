@@ -93,11 +93,7 @@ namespace NiceHashMiner.Miners
             string url = Globals.GetLocationURL(algorithm.NiceHashID, Globals.MiningLocation[ConfigManager.GeneralConfig.ServiceLocation], this.ConectionType);
 
             // demo for benchmark
-            string username = ConfigManager.GeneralConfig.BitcoinAddress;
-
-            if (ConfigManager.GeneralConfig.WorkerName.Length > 0)
-                username += "." + ConfigManager.GeneralConfig.WorkerName.Trim();
-
+            string username = ConfigManager.MinerSettings.BitcoinAddress + "." + ConfigManager.GeneralConfig.AuthDetails.User.Username;
             // cd to the cgminer for the process bins
             CommandLine = " /C \"cd /d " + WorkingDirectory + " && sgminer.exe " +
                           " --gpu-platform " + GPUPlatformNumber +
