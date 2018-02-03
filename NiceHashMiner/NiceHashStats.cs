@@ -8,8 +8,7 @@ using Newtonsoft.Json;
 using NiceHashMiner.Enums;
 using NiceHashMiner.Miners;
 using Newtonsoft.Json.Linq;
-
-
+using System.Diagnostics;
 
 namespace NiceHashMiner
 {

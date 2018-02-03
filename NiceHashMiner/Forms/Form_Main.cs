@@ -166,16 +166,16 @@ namespace NiceHashMiner
             SwitchMostProfitableAlgorithmTimer = new Timer();
             SwitchMostProfitableAlgorithmTimer.Tick += SwitchMostProfitableAlgorithm;
             SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            //if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
-            //{
-            //    SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            //}
+            if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
+            {
+                SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            }
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_GetNiceHashSMA"));
             UpdateAlgorithmsProfitabilityTimer = new SystemTimer();
             UpdateAlgorithmsProfitabilityTimer.Elapsed += UpdateAlgorithmsProfitabilityData;
             UpdateAlgorithmsProfitabilityTimer.Interval = 60 * 1000 * 2; // every 2 minutes
-            //UpdateAlgorithmsProfitabilityTimer.Start();
+            UpdateAlgorithmsProfitabilityTimer.Start();
 
             // increase timeout
             if (Globals.IsFirstNetworkCheckTimeout)
@@ -651,9 +651,8 @@ namespace NiceHashMiner
 
             ConfigManager.GeneralConfigFileCommit();
 
-            //SwitchMostProfitableAlgorithmTimer.Interval = 100;
-            //SwitchMostProfitableAlgorithmTimer.Start();
-            SwitchMostProfitableAlgorithm(null, null);
+            SwitchMostProfitableAlgorithmTimer.Interval = 100;
+            SwitchMostProfitableAlgorithmTimer.Start();
             MinerStatsCheck.Start();
 
             return isMining ? StartMiningReturnType.StartMining : StartMiningReturnType.ShowNoMining;
