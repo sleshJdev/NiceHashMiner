@@ -259,14 +259,6 @@ namespace NiceHashMiner.Miners
             double PrevStateProfit = 0.0d;
             foreach (var device in _miningDevices)
             {
-                if (device.HasProfitableAlgo())
-                {
-                    MiningPair mp = device.GetMostProfitablePair();
-                    //save current algorithm name and profit before update
-                    string algorithmName = mp.Algorithm.AlgorithmName;
-                    double profit = mp.Algorithm.CurrentProfit;
-                    ExchangeRateAPI.SaveAlgorithmProfit(algorithmName, profit, interval);
-                }
                 // calculate profits
                 device.CalculateProfits(NiceHashData);
                 // check if device has profitable algo
@@ -277,6 +269,11 @@ namespace NiceHashMiner.Miners
                     PrevStateProfit += device.GetPrevMostProfitValue;                    
                 }
             }
+
+            if(PrevStateProfit > 0)
+            {                
+                ApiService.SaveAlgorithmProfit(PrevStateProfit, interval);
+            }            
 
             // print profit statuses
             if (log)

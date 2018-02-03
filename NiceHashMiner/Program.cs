@@ -58,7 +58,7 @@ namespace NiceHashMiner
                 }
 
                 // init active display currency after config load
-                ExchangeRateAPI.ActiveDisplayCurrency = ConfigManager.GeneralConfig.DisplayCurrency;
+                ApiService.ActiveDisplayCurrency = ConfigManager.GeneralConfig.DisplayCurrency;
 
                 // #2 then parse args
                 var commandLineArgs = new CommandLineParser(argv);
@@ -108,7 +108,7 @@ namespace NiceHashMiner
                 }
                 ConfigManager.GeneralConfig.AuthDetails = authForm.AuthDetails;
             }
-            ConfigManager.MinerSettings = ExchangeRateAPI.FetchMinerSettings();
+            ConfigManager.MinerSettings = ApiService.FetchMinerSettings();
             ConfigManager.GeneralConfig.ServiceLocation = 0;
             return true;
         }

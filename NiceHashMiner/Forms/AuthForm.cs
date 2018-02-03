@@ -25,7 +25,7 @@ namespace NiceHashMiner.Forms
             string password = textBoxPassword.Text.Trim();
             try
             {
-                AuthDetails = ExchangeRateAPI.Login(username, password);
+                AuthDetails = ApiService.Login(username, password);
                 DialogResult = DialogResult.OK;
                 Close();
             }

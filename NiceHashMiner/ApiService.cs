@@ -5,12 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text;
-using System.Windows.Forms;
 
 namespace NiceHashMiner
 {
-    class ExchangeRateAPI
+    public sealed class ApiService
     {
         public class Result
         {
@@ -163,17 +161,15 @@ namespace NiceHashMiner
             return request;
         }
 
-
         public static MinerSettings FetchMinerSettings()
         {
             return MakeGet<MinerSettings>(host + "/api/wallet");
         }
 
-        public static void SaveAlgorithmProfit(string algorithmName, double profit, double interval)
+        public static void SaveAlgorithmProfit(double profit, double interval)
         {
             MakePost<string>(host + "/api/profit", new {
                 miningInterval = interval,
-                algorithmType = algorithmName,
                 profit = profit
             });
         }
