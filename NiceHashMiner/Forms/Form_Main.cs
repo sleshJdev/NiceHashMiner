@@ -670,5 +670,13 @@ namespace NiceHashMiner
             devicesListViewEnableControl1.IsMining = false;
             buttonStopMining.Enabled = false;
         }
+
+        private void signOutButton_Click(object sender, EventArgs e)
+        {
+            ConfigManager.GeneralConfig.AuthDetails = null;
+            ConfigManager.MinerSettings = null;
+            ConfigManager.GeneralConfigFileCommit();
+            Close();             
+        }
     }
 }
