@@ -165,11 +165,11 @@ namespace NiceHashMiner
 
             SwitchMostProfitableAlgorithmTimer = new Timer();
             SwitchMostProfitableAlgorithmTimer.Tick += SwitchMostProfitableAlgorithm;
-            SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
-            {
-                SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            }
+            SwitchMostProfitableAlgorithmTimer.Interval = 60000;//ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            //if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
+            //{
+            //    SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            //}
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_GetNiceHashSMA"));
             UpdateAlgorithmsProfitabilityTimer = new SystemTimer();
@@ -368,11 +368,11 @@ namespace NiceHashMiner
         private void SwitchMostProfitableAlgorithm(object sender, EventArgs e)
         {
             double interval = SwitchMostProfitableAlgorithmTimer.Interval;
-            SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
-            {
-                SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            }
+            //SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            //if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
+            //{
+            //    SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            //}
 
 #if (SWITCH_TESTING)
             SMAMinerCheck.Interval = MiningDevice.SMAMinerCheckInterval;
@@ -651,7 +651,7 @@ namespace NiceHashMiner
 
             ConfigManager.GeneralConfigFileCommit();
 
-            SwitchMostProfitableAlgorithmTimer.Interval = 100;
+            SwitchMostProfitableAlgorithmTimer.Interval = 60000;
             SwitchMostProfitableAlgorithmTimer.Start();
             MinerStatsCheck.Start();
 
