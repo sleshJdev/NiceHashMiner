@@ -22,7 +22,7 @@ namespace NiceHashMiner
         private static string VisitURL = Links.VisitURL;
         private Timer MinerStatsCheck;
         private SystemTimer UpdateAlgorithmsProfitabilityTimer;
-        private Timer BalanceCheck;
+        private Timer UpdateGlobalRateTick;
         private Timer SwitchMostProfitableAlgorithmTimer;
         private Timer BitcoinExchangeCheck;
         private Timer IdleCheck;
@@ -57,7 +57,7 @@ namespace NiceHashMiner
             MessageBoxManager.Unregister();
             MessageBoxManager.Register();
 
-            toolStripStatusLabelBalanceText.Text = (ApiService.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
+            toolStripStatusBtcPerDayLabel.Text = (ApiService.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
             devicesListViewEnableControl1.InitLocale();
         }
 
@@ -70,8 +70,8 @@ namespace NiceHashMiner
 
             Text += ", Account: " + ConfigManager.GeneralConfig.AuthDetails.User.Username;
             toolStripStatusLabelBalanceDollarValue.Text = "(" + ApiService.ActiveDisplayCurrency + ")";
-            toolStripStatusLabelBalanceText.Text = (ApiService.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
-            BalanceCheck_Tick(null, null); // update currency changes
+            toolStripStatusBtcPerDayLabel.Text = (ApiService.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
+            UpdateRate_Tick(null, null); // update currency changes
 
             if (_isDeviceDetectionInitialized)
             {
@@ -198,11 +198,10 @@ namespace NiceHashMiner
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_GetNiceHashBalance"));
 
-            BalanceCheck = new Timer();
-            BalanceCheck.Tick += BalanceCheck_Tick;
-            BalanceCheck.Interval = 61 * 1000 * 5; // every ~5 minutes
-            BalanceCheck.Start();
-            BalanceCheck_Tick(null, null);
+            UpdateGlobalRateTick = new Timer();
+            UpdateGlobalRateTick.Tick += UpdateRate_Tick;
+            UpdateGlobalRateTick.Interval = 5000; // every ~5 minutes            
+            UpdateRate_Tick(null, null);
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_SetEnvironmentVariable"));
             Helpers.SetDefaultEnvironmentVariables();
@@ -368,11 +367,11 @@ namespace NiceHashMiner
         private void SwitchMostProfitableAlgorithm(object sender, EventArgs e)
         {
             double interval = SwitchMostProfitableAlgorithmTimer.Interval;
-            //SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            //if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
-            //{
-            //    SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            //}
+            SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
+            {
+                SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            }
 
 #if (SWITCH_TESTING)
             SMAMinerCheck.Interval = MiningDevice.SMAMinerCheckInterval;
@@ -385,31 +384,6 @@ namespace NiceHashMiner
         {
             MinersManager.MinerStatsCheck(Globals.NiceHashData);
         }
-
-        void BalanceCheck_Tick(object sender, EventArgs e)
-        {
-            Helpers.ConsolePrint("NICEHASH", "Balance get");
-            double Balance = NiceHashStats.GetBalance(ConfigManager.MinerSettings.BitcoinAddress, ConfigManager.MinerSettings.BitcoinAddress + "." + ConfigManager.GeneralConfig.AuthDetails.User.Username);
-            if (Balance > 0)
-            {
-                if (ConfigManager.GeneralConfig.AutoScaleBTCValues && Balance < 0.1)
-                {
-                    toolStripStatusLabelBalanceBTCCode.Text = "mBTC";
-                    toolStripStatusLabelBalanceBTCValue.Text = (Balance * 1000).ToString("F5", CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    toolStripStatusLabelBalanceBTCCode.Text = "BTC";
-                    toolStripStatusLabelBalanceBTCValue.Text = Balance.ToString("F6", CultureInfo.InvariantCulture);
-                }
-
-                //Helpers.ConsolePrint("CurrencyConverter", "Using CurrencyConverter" + ConfigManager.Instance.GeneralConfig.DisplayCurrency);
-                double Amount = (Balance * Globals.BitcoinUSDRate);
-                Amount = ApiService.ConvertToActiveCurrency(Amount);
-                toolStripStatusLabelBalanceDollarText.Text = Amount.ToString("F2", CultureInfo.InvariantCulture);
-            }
-        }
-
 
         void BitcoinExchangeCheck_Tick(object sender, EventArgs e)
         {
@@ -531,30 +505,35 @@ namespace NiceHashMiner
             return ret;
         }
 
-        private void toolStripStatusLabel10_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start(Links.NHM_Paying_Faq);
-        }
 
-        private void toolStripStatusLabel10_MouseHover(object sender, EventArgs e)
+        private void UpdateRate_Tick(object sender, EventArgs e)
         {
-            statusStrip1.Cursor = Cursors.Hand;
-        }
+            double TotalRate = MinersManager.GetTotalRate();
 
-        private void toolStripStatusLabel10_MouseLeave(object sender, EventArgs e)
-        {
-            statusStrip1.Cursor = Cursors.Default;
-        }
+            if (ConfigManager.GeneralConfig.AutoScaleBTCValues && TotalRate < 0.1)
+            {
+                toolStripStatusBtcPerDayLabel.Text = "mBTC/" + International.GetText("Day");
+                toolStripStatusBtcPerDayValue.Text = (TotalRate * 1000).ToString("F5", CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                toolStripStatusBtcPerDayLabel.Text = "BTC/" + International.GetText("Day");
+                toolStripStatusBtcPerDayValue.Text = (TotalRate).ToString("F6", CultureInfo.InvariantCulture);
+            }
 
+            toolStripStatusUsdPerDayValue.Text = ApiService.ConvertToActiveCurrency((TotalRate * Globals.BitcoinUSDRate)).ToString("F2", CultureInfo.InvariantCulture);
+        }
+        
+        
         // Minimize to system tray if MinimizeToTray is set to true
         private void FormMain_Resize(object sender, EventArgs e)
         {
-            notifyIcon1.Icon = NiceHashMiner.Properties.Resources.logo;
-            notifyIcon1.Text = Application.ProductName + " v" + Application.ProductVersion + "\nDouble-click to restore..";
+            notifyIcon.Icon = NiceHashMiner.Properties.Resources.logo;
+            notifyIcon.Text = Application.ProductName + " v" + Application.ProductVersion + "\nDouble-click to restore..";
 
             if (ConfigManager.GeneralConfig.MinimizeToTray && FormWindowState.Minimized == this.WindowState)
             {
-                notifyIcon1.Visible = true;
+                notifyIcon.Visible = true;
                 this.Hide();
             }
         }
@@ -564,7 +543,7 @@ namespace NiceHashMiner
         {
             this.Show();
             this.WindowState = FormWindowState.Normal;
-            notifyIcon1.Visible = false;
+            notifyIcon.Visible = false;
         }
 
         ///////////////////////////////////////
@@ -654,6 +633,7 @@ namespace NiceHashMiner
             SwitchMostProfitableAlgorithmTimer.Interval = 60000;
             SwitchMostProfitableAlgorithmTimer.Start();
             MinerStatsCheck.Start();
+            UpdateGlobalRateTick.Start();
 
             return isMining ? StartMiningReturnType.StartMining : StartMiningReturnType.ShowNoMining;
         }
@@ -661,6 +641,7 @@ namespace NiceHashMiner
         private void StopMining()
         {
             MinerStatsCheck.Stop();
+            UpdateGlobalRateTick.Stop();
             SwitchMostProfitableAlgorithmTimer.Stop();
 
             MinersManager.StopAllMiners();
