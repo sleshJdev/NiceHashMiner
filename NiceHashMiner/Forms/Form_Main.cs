@@ -71,7 +71,7 @@ namespace NiceHashMiner
             Text += ", Account: " + ConfigManager.GeneralConfig.AuthDetails.User.Username;
             toolStripStatusLabelBalanceDollarValue.Text = "(" + ApiService.ActiveDisplayCurrency + ")";
             toolStripStatusBtcPerDayLabel.Text = (ApiService.ActiveDisplayCurrency + "/") + International.GetText("Day") + "     " + International.GetText("Form_Main_balance") + ":";
-            UpdateRate_Tick(null, null); // update currency changes
+            UpdateMiningRate(null, null); // update currency changes
 
             if (_isDeviceDetectionInitialized)
             {
@@ -199,9 +199,9 @@ namespace NiceHashMiner
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_GetNiceHashBalance"));
 
             UpdateGlobalRateTick = new Timer();
-            UpdateGlobalRateTick.Tick += UpdateRate_Tick;
+            UpdateGlobalRateTick.Tick += UpdateMiningRate;
             UpdateGlobalRateTick.Interval = 5000; // every ~5 minutes            
-            UpdateRate_Tick(null, null);
+            UpdateMiningRate(null, null);
 
             LoadingScreen.IncreaseLoadCounterAndMessage(International.GetText("Form_Main_loadtext_SetEnvironmentVariable"));
             Helpers.SetDefaultEnvironmentVariables();
@@ -506,7 +506,7 @@ namespace NiceHashMiner
         }
 
 
-        private void UpdateRate_Tick(object sender, EventArgs e)
+        private void UpdateMiningRate(object sender, EventArgs e)
         {
             double TotalRate = MinersManager.GetTotalRate();
 
@@ -650,6 +650,8 @@ namespace NiceHashMiner
             buttonStartMining.Enabled = true;
             devicesListViewEnableControl1.IsMining = false;
             buttonStopMining.Enabled = false;
+
+            UpdateMiningRate(null, null);
         }
 
         private void signOutButton_Click(object sender, EventArgs e)
