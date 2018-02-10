@@ -165,7 +165,7 @@ namespace NiceHashMiner
 
             SwitchMostProfitableAlgorithmTimer = new Timer();
             SwitchMostProfitableAlgorithmTimer.Tick += SwitchMostProfitableAlgorithm;
-            SwitchMostProfitableAlgorithmTimer.Interval = 60000;//ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            SwitchMostProfitableAlgorithmTimer.Interval = 120000;//ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
             //if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
             //{
             //    SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
@@ -367,11 +367,11 @@ namespace NiceHashMiner
         private void SwitchMostProfitableAlgorithm(object sender, EventArgs e)
         {
             double interval = SwitchMostProfitableAlgorithmTimer.Interval;
-            SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
-            {
-                SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
-            }
+            //SwitchMostProfitableAlgorithmTimer.Interval = ConfigManager.GeneralConfig.SwitchMinSecondsFixed * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            //if (ComputeDeviceManager.Group.ContainsAMD_GPUs)
+            //{
+            //    SwitchMostProfitableAlgorithmTimer.Interval = (ConfigManager.GeneralConfig.SwitchMinSecondsAMD + ConfigManager.GeneralConfig.SwitchMinSecondsFixed) * 1000 + randomizer.Next(ConfigManager.GeneralConfig.SwitchMinSecondsDynamic * 1000);
+            //}
 
 #if (SWITCH_TESTING)
             SMAMinerCheck.Interval = MiningDevice.SMAMinerCheckInterval;
